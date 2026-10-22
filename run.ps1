@@ -8,7 +8,7 @@ Write-Host "Đang biên dịch và khởi động Novagon..." -ForegroundColor C
 dotnet build -v q
 if ($LASTEXITCODE -eq 0) {
     $exe = Join-Path $PSScriptRoot "src\Novagon.UI\bin\Debug\net10.0-windows\Novagon.exe"
-    Start-Process $exe -WorkingDirectory $PSScriptRoot
+    Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{CommandLine = "`"$exe`""; CurrentDirectory = $PSScriptRoot} | Out-Null
     Write-Host "Novagon đã khởi chạy thành công!" -ForegroundColor Green
 } else {
     Write-Host "Lỗi biên dịch!" -ForegroundColor Red

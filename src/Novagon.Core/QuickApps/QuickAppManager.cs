@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -26,7 +26,7 @@ public class QuickAppManager
     }
 
     /// <summary>
-    /// Chuáº©n hÃ³a tÃªn database tá»« tÃªn dá»± Ã¡n (vÃ­ dá»¥ "my-blog" -> "my_blog")
+    /// Chuẩn hóa tên database từ tên dự án (ví dụ "my-blog" -> "my_blog")
     /// </summary>
     public static string NormalizeDbName(string projectName)
     {
@@ -34,7 +34,7 @@ public class QuickAppManager
     }
 
     /// <summary>
-    /// Tá»± Ä‘á»™ng táº¡o MySQL/MariaDB database náº¿u server Ä‘ang cháº¡y
+    /// Tự động tạo MySQL/MariaDB database nếu server đang chạy
     /// </summary>
     public bool EnsureDatabaseCreated(string dbName)
     {
@@ -42,7 +42,7 @@ public class QuickAppManager
         {
             if (!PortChecker.IsPortInUse(3306))
             {
-                OnLog?.Invoke($"[DB] Lá»—i: MySQL chÆ°a cháº¡y trÃªn cá»•ng 3306. KhÃ´ng thá»ƒ táº¡o Database '{dbName}'.");
+                OnLog?.Invoke($"[DB] Lỗi: MySQL chưa chạy trên cổng 3306. Không thể tạo Database '{dbName}'.");
                 return false;
             }
 
@@ -56,7 +56,7 @@ public class QuickAppManager
 
             if (mysqlExe == null || !File.Exists(mysqlExe))
             {
-                OnLog?.Invoke($"[DB] Lá»—i: KhÃ´ng tÃ¬m tháº¥y tá»‡p thá»±c thi mysql.exe trong {mysqlBinDir}");
+                OnLog?.Invoke($"[DB] Lỗi: Không tìm thấy tệp thực thi mysql.exe trong {mysqlBinDir}");
                 return false;
             }
 
@@ -73,30 +73,30 @@ public class QuickAppManager
             using var proc = System.Diagnostics.Process.Start(psi);
             if (proc == null)
             {
-                OnLog?.Invoke($"[DB] Lá»—i: KhÃ´ng thá»ƒ khá»Ÿi cháº¡y tiáº¿n trÃ¬nh mysql.exe");
+                OnLog?.Invoke($"[DB] Lỗi: Không thể khởi chạy tiến trình mysql.exe");
                 return false;
             }
 
             proc.WaitForExit(5000);
             if (proc.ExitCode == 0)
             {
-                OnLog?.Invoke($"[DB] âœ“ ÄÃ£ tá»± Ä‘á»™ng táº¡o Database MySQL: '{dbName}'");
+                OnLog?.Invoke($"[DB] ✓ Đã tự động tạo Database MySQL: '{dbName}'");
                 return true;
             }
 
             string err = proc.StandardError.ReadToEnd().Trim();
-            OnLog?.Invoke($"[DB] Lá»—i khi táº¡o Database '{dbName}' (ExitCode: {proc.ExitCode}): {err}");
+            OnLog?.Invoke($"[DB] Lỗi khi tạo Database '{dbName}' (ExitCode: {proc.ExitCode}): {err}");
             return false;
         }
         catch (Exception ex)
         {
-            OnLog?.Invoke($"[DB] Ngoáº¡i lá»‡ khi táº¡o Database: {ex.Message}");
+            OnLog?.Invoke($"[DB] Ngoại lệ khi tạo Database: {ex.Message}");
             return false;
         }
     }
 
     /// <summary>
-    /// Táº¡o dá»± Ã¡n PHP Blank thuáº§n vá»›i giao diá»‡n kiá»ƒm tra server hiá»‡n Ä‘áº¡i
+    /// Tạo dự án PHP Blank thuần với giao diện kiểm tra server hiện đại
     /// </summary>
     public bool CreateBlankPhpApp(string projectName, out string projectDir)
     {
@@ -108,7 +108,7 @@ public class QuickAppManager
         projectDir = Path.Combine(_wwwRoot, projectName);
         if (Directory.Exists(projectDir))
         {
-            OnLog?.Invoke($"Lá»—i: ThÆ° má»¥c dá»± Ã¡n '{projectName}' Ä‘Ã£ tá»“n táº¡i trong www/");
+            OnLog?.Invoke($"Lỗi: Thư mục dự án '{projectName}' đã tồn tại trong www/");
             return false;
         }
 
@@ -152,12 +152,12 @@ public class QuickAppManager
 </head>
 <body>
     <div class=""card"">
-        <h1>{projectName} <span class=""badge"">Äang hoáº¡t Ä‘á»™ng</span></h1>
-        <p>Dá»± Ã¡n Ä‘Æ°á»£c khá»Ÿi táº¡o thÃ nh cÃ´ng bá»Ÿi <strong>Novagon Quick App</strong>.</p>
+        <h1>{projectName} <span class=""badge"">Đang hoạt động</span></h1>
+        <p>Dự án được khởi tạo thành công bởi <strong>Novagon Quick App</strong>.</p>
 
         <div class=""info-grid"">
             <div class=""info-box"">
-                <div class=""info-title"">PhiÃªn báº£n PHP</div>
+                <div class=""info-title"">Phiên bản PHP</div>
                 <div class=""info-val""><?= phpversion(); ?></div>
             </div>
             <div class=""info-box"">
@@ -174,9 +174,9 @@ public class QuickAppManager
                     <?php
                     try {{
                         $pdo = new PDO('mysql:host=127.0.0.1;port=3306', 'root', '', [PDO::ATTR_TIMEOUT => 2]);
-                        echo '<span class=""status-ok"">âœ“ Káº¿t ná»‘i thÃ nh cÃ´ng</span>';
+                        echo '<span class=""status-ok"">✓ Kết nối thành công</span>';
                     }} catch (Exception $e) {{
-                        echo '<span class=""status-err"">ChÆ°a káº¿t ná»‘i: ' . htmlspecialchars($e->getMessage()) . '</span>';
+                        echo '<span class=""status-err"">Chưa kết nối: ' . htmlspecialchars($e->getMessage()) . '</span>';
                     }}
                     ?>
                 </div>
@@ -184,8 +184,8 @@ public class QuickAppManager
         </div>
 
         <div class=""btn-group"">
-            <a href=""?phpinfo=1"" class=""btn"" target=""_blank"">Xem cáº¥u hÃ¬nh PHP Info &rarr;</a>
-            <a href=""http://127.0.0.1/phpmyadmin"" class=""btn btn-secondary"" target=""_blank"">Má»Ÿ phpMyAdmin &rarr;</a>
+            <a href=""?phpinfo=1"" class=""btn"" target=""_blank"">Xem cấu hình PHP Info &rarr;</a>
+            <a href=""http://127.0.0.1/phpmyadmin"" class=""btn btn-secondary"" target=""_blank"">Mở phpMyAdmin &rarr;</a>
         </div>
         <?php if (isset($_GET['phpinfo'])) {{ phpinfo(); exit; }} ?>
     </div>
@@ -193,12 +193,12 @@ public class QuickAppManager
 </html>";
 
         File.WriteAllText(Path.Combine(projectDir, "index.php"), indexPhpContent);
-        OnLog?.Invoke($"[QuickApp] ÄÃ£ táº¡o thÃ nh cÃ´ng dá»± Ã¡n Blank PHP '{projectName}' táº¡i {projectDir}");
+        OnLog?.Invoke($"[QuickApp] Đã tạo thành công dự án Blank PHP '{projectName}' tại {projectDir}");
         return true;
     }
 
     /// <summary>
-    /// TÃ¬m tá»‡p thá»±c thi php.exe trong bin/php
+    /// Tìm tệp thực thi php.exe trong bin/php
     /// </summary>
     public static string? FindPhpExecutable()
     {
@@ -212,15 +212,15 @@ public class QuickAppManager
     }
 
     /// <summary>
-    /// TÃ¬m hoáº·c kiá»ƒm tra composer.phar portable
+    /// Tìm hoặc kiểm tra composer.phar portable
     /// </summary>
     public static string? FindComposerPhar()
     {
-        // 1. Kiá»ƒm tra bin/composer/composer.phar trong AppRoot
+        // 1. Kiểm tra bin/composer/composer.phar trong AppRoot
         string localPhar = Path.Combine(AppDirectoryHelper.AppRoot, "bin", "composer", "composer.phar");
         if (File.Exists(localPhar)) return localPhar;
 
-        // 2. Kiá»ƒm tra D:\laragon\bin\composer\composer.phar náº¿u cÃ³
+        // 2. Kiểm tra D:\laragon\bin\composer\composer.phar nếu có
         string altLaragon = @"D:\laragon\bin\composer\composer.phar";
         if (File.Exists(altLaragon)) return altLaragon;
 
@@ -228,7 +228,7 @@ public class QuickAppManager
     }
 
     /// <summary>
-    /// Táº¡o dá»± Ã¡n Laravel chuáº©n 100% báº±ng Composer (composer create-project laravel/laravel)
+    /// Tạo dự án Laravel chuẩn 100% bằng Composer (composer create-project laravel/laravel)
     /// </summary>
     public async Task<(bool Success, string Message, string ProjectDir)> CreateLaravelAppAsync(
         string projectName,
@@ -240,36 +240,36 @@ public class QuickAppManager
         {
             if (Directory.Exists(projectDir))
             {
-                return (false, $"ThÆ° má»¥c dá»± Ã¡n '{projectName}' Ä‘Ã£ tá»“n táº¡i trong www/", projectDir);
+                return (false, $"Thư mục dự án '{projectName}' đã tồn tại trong www/", projectDir);
             }
 
             string dbName = NormalizeDbName(projectName);
 
-            // 1. Tá»± Ä‘á»™ng táº¡o Database MySQL náº¿u Ä‘Æ°á»£c chá»n
+            // 1. Tự động tạo Database MySQL nếu được chọn
             if (createDb)
             {
-                progressCallback?.Invoke(10, $"Äang táº¡o Database MySQL '{dbName}'...");
+                progressCallback?.Invoke(10, $"Đang tạo Database MySQL '{dbName}'...");
                 if (!EnsureDatabaseCreated(dbName))
                 {
-                    string err = $"KhÃ´ng thá»ƒ táº¡o Database '{dbName}'. QuÃ¡ trÃ¬nh cÃ i Ä‘áº·t Ä‘Ã£ dá»«ng láº¡i.";
-                    OnLog?.Invoke($"[QuickApp] âœ— {err}");
+                    string err = $"Không thể tạo Database '{dbName}'. Quá trình cài đặt đã dừng lại.";
+                    OnLog?.Invoke($"[QuickApp] ✗ {err}");
                     return (false, err, projectDir);
                 }
             }
 
-            // 2. TÃ¬m PHP vÃ  Composer
-            progressCallback?.Invoke(15, "Äang chuáº©n bá»‹ mÃ´i trÆ°á»ng PHP vÃ  Composer...");
+            // 2. Tìm PHP và Composer
+            progressCallback?.Invoke(15, "Đang chuẩn bị môi trường PHP và Composer...");
             string? phpExe = FindPhpExecutable();
             if (phpExe == null)
             {
-                return (false, "KhÃ´ng tÃ¬m tháº¥y php.exe trong bin/php/", projectDir);
+                return (false, "Không tìm thấy php.exe trong bin/php/", projectDir);
             }
 
             string? composerPhar = FindComposerPhar();
             if (composerPhar == null)
             {
-                progressCallback?.Invoke(20, "Äang táº£i bá»™ náº¡p Composer má»›i nháº¥t tá»« getcomposer.org...");
-                OnLog?.Invoke("[QuickApp] Äang táº£i composer.phar tá»« https://getcomposer.org/download/latest-stable/composer.phar...");
+                progressCallback?.Invoke(20, "Đang tải bộ nạp Composer mới nhất từ getcomposer.org...");
+                OnLog?.Invoke("[QuickApp] Đang tải composer.phar từ https://getcomposer.org/download/latest-stable/composer.phar...");
                 string composerDir = Path.Combine(AppDirectoryHelper.AppRoot, "bin", "composer");
                 Directory.CreateDirectory(composerDir);
                 composerPhar = Path.Combine(composerDir, "composer.phar");
@@ -279,9 +279,9 @@ public class QuickAppManager
                 await response.Content.CopyToAsync(fs);
             }
 
-            // 3. Thá»±c thi Composer create-project
-            progressCallback?.Invoke(25, "Äang khá»Ÿi cháº¡y 'composer create-project laravel/laravel'...");
-            OnLog?.Invoke($"[Composer] Báº¯t Ä‘áº§u táº¡o dá»± Ã¡n Laravel: composer create-project laravel/laravel {projectName} --prefer-dist");
+            // 3. Thực thi Composer create-project
+            progressCallback?.Invoke(25, "Đang khởi chạy 'composer create-project laravel/laravel'...");
+            OnLog?.Invoke($"[Composer] Bắt đầu tạo dự án Laravel: composer create-project laravel/laravel {projectName} --prefer-dist");
 
             var psi = new ProcessStartInfo
             {
@@ -294,7 +294,7 @@ public class QuickAppManager
                 RedirectStandardError = true
             };
 
-            // ÄÆ°a thÆ° má»¥c chá»©a php.exe vÃ o biáº¿n mÃ´i trÆ°á»ng PATH Ä‘á»ƒ script háº­u cÃ i Ä‘áº·t cá»§a Composer cháº¡y Ä‘Æ°á»£c php
+            // Đưa thư mục chứa php.exe vào biến môi trường PATH để script hậu cài đặt của Composer chạy được php
             string? phpDir = Path.GetDirectoryName(phpExe);
             if (phpDir != null)
             {
@@ -312,13 +312,13 @@ public class QuickAppManager
                 {
                     outputBuilder.AppendLine(e.Data);
                     OnLog?.Invoke($"[Composer] {e.Data}");
-                    // Cáº­p nháº­t tiáº¿n trÃ¬nh Æ°á»›c tÃ­nh dá»±a trÃªn cÃ¡c bÆ°á»›c cá»§a Composer
+                    // Cập nhật tiến trình ước tính dựa trên các bước của Composer
                     if (e.Data.Contains("Installing dependencies", StringComparison.OrdinalIgnoreCase))
-                        progressCallback?.Invoke(40, "Composer: Äang táº£i cÃ¡c gÃ³i dependencies cá»§a Laravel...");
+                        progressCallback?.Invoke(40, "Composer: Đang tải các gói dependencies của Laravel...");
                     else if (e.Data.Contains("Generating optimized", StringComparison.OrdinalIgnoreCase))
-                        progressCallback?.Invoke(70, "Composer: Äang sinh autoload tá»‘i Æ°u...");
+                        progressCallback?.Invoke(70, "Composer: Đang sinh autoload tối ưu...");
                     else if (e.Data.Contains("artisan", StringComparison.OrdinalIgnoreCase))
-                        progressCallback?.Invoke(85, "Composer: Äang khá»Ÿi táº¡o á»©ng dá»¥ng qua Artisan...");
+                        progressCallback?.Invoke(85, "Composer: Đang khởi tạo ứng dụng qua Artisan...");
                     else
                         progressCallback?.Invoke(50, $"Composer: {e.Data}");
                 }
@@ -343,12 +343,12 @@ public class QuickAppManager
             {
                 string err = errorBuilder.ToString().Trim();
                 if (string.IsNullOrWhiteSpace(err)) err = outputBuilder.ToString().Trim();
-                OnLog?.Invoke($"[Composer] âœ— Tháº¥t báº¡i (ExitCode: {proc.ExitCode}): {err}");
-                return (false, $"Lá»—i cÃ i Ä‘áº·t Laravel báº±ng Composer (ExitCode {proc.ExitCode}): {err}", projectDir);
+                OnLog?.Invoke($"[Composer] ✗ Thất bại (ExitCode: {proc.ExitCode}): {err}");
+                return (false, $"Lỗi cài đặt Laravel bằng Composer (ExitCode {proc.ExitCode}): {err}", projectDir);
             }
 
-            // 4. Äá»“ng bá»™ cáº¥u hÃ¬nh Database vÃ o .env cá»§a Laravel
-            progressCallback?.Invoke(92, "Äang Ä‘á»“ng bá»™ cáº¥u hÃ¬nh Database vÃ  Domain vÃ o .env...");
+            // 4. Đồng bộ cấu hình Database vào .env của Laravel
+            progressCallback?.Invoke(92, "Đang đồng bộ cấu hình Database và Domain vào .env...");
             string envFile = Path.Combine(projectDir, ".env");
             if (File.Exists(envFile))
             {
@@ -361,17 +361,17 @@ public class QuickAppManager
                 envContent = UpdateEnvKey(envContent, "DB_PASSWORD", "");
                 envContent = UpdateEnvKey(envContent, "APP_URL", $"http://{projectName}.test");
                 File.WriteAllText(envFile, envContent);
-                OnLog?.Invoke($"[QuickApp] âœ“ ÄÃ£ cáº­p nháº­t file .env vá»›i DB_DATABASE='{dbName}'");
+                OnLog?.Invoke($"[QuickApp] ✓ Đã cập nhật file .env với DB_DATABASE='{dbName}'");
             }
 
-            progressCallback?.Invoke(100, "HoÃ n táº¥t táº¡o dá»± Ã¡n Laravel chuáº©n 100%!");
-            OnLog?.Invoke($"[QuickApp] âœ“ Táº¡o thÃ nh cÃ´ng dá»± Ã¡n Laravel '{projectName}' Ä‘áº§y Ä‘á»§ framework vÃ  packages.");
-            return (true, "Khá»Ÿi táº¡o dá»± Ã¡n Laravel báº±ng Composer thÃ nh cÃ´ng!", projectDir);
+            progressCallback?.Invoke(100, "Hoàn tất tạo dự án Laravel chuẩn 100%!");
+            OnLog?.Invoke($"[QuickApp] ✓ Tạo thành công dự án Laravel '{projectName}' đầy đủ framework và packages.");
+            return (true, "Khởi tạo dự án Laravel bằng Composer thành công!", projectDir);
         }
         catch (Exception ex)
         {
-            OnLog?.Invoke($"[QuickApp] Lá»—i táº¡o Laravel: {ex.Message}");
-            return (false, $"Lá»—i cÃ i Ä‘áº·t Laravel: {ex.Message}", projectDir);
+            OnLog?.Invoke($"[QuickApp] Lỗi tạo Laravel: {ex.Message}");
+            return (false, $"Lỗi cài đặt Laravel: {ex.Message}", projectDir);
         }
     }
 
@@ -386,14 +386,14 @@ public class QuickAppManager
     }
 
     /// <summary>
-    /// Táº¡o khung dá»± Ã¡n Laravel Starter Ä‘áº§y Ä‘á»§ chuáº©n hÃ³a
+    /// Tạo khung dự án Laravel Starter đầy đủ chuẩn hóa
     /// </summary>
     public bool CreateLaravelApp(string projectName, bool createDb, out string projectDir)
     {
         projectDir = Path.Combine(_wwwRoot, projectName);
         if (Directory.Exists(projectDir))
         {
-            OnLog?.Invoke($"Lá»—i: ThÆ° má»¥c dá»± Ã¡n '{projectName}' Ä‘Ã£ tá»“n táº¡i trong www/");
+            OnLog?.Invoke($"Lỗi: Thư mục dự án '{projectName}' đã tồn tại trong www/");
             return false;
         }
 
@@ -409,7 +409,7 @@ public class QuickAppManager
             }
         }
 
-        // Táº¡o cáº¥u trÃºc thÆ° má»¥c Laravel
+        // Tạo cấu trúc thư mục Laravel
         string appDir = Path.Combine(projectDir, "app");
         string bootstrapDir = Path.Combine(projectDir, "bootstrap");
         string configDir = Path.Combine(projectDir, "config");
@@ -426,7 +426,7 @@ public class QuickAppManager
         Directory.CreateDirectory(routesDir);
         Directory.CreateDirectory(storageDir);
 
-        // Sinh APP_KEY ngáº«u nhiÃªn
+        // Sinh APP_KEY ngẫu nhiên
         byte[] keyBytes = new byte[32];
         RandomNumberGenerator.Fill(keyBytes);
         string appKey = "base64:" + Convert.ToBase64String(keyBytes);
@@ -456,7 +456,7 @@ SESSION_LIFETIME=120
         File.WriteAllText(Path.Combine(projectDir, ".env"), envContent);
         File.WriteAllText(Path.Combine(projectDir, ".env.example"), envContent);
 
-        // File public/index.php giao diá»‡n chÃ o má»«ng phong cÃ¡ch Laravel hiá»‡n Ä‘áº¡i
+        // File public/index.php giao diện chào mừng phong cách Laravel hiện đại
         string publicIndex = $@"<!DOCTYPE html>
 <html lang=""vi"">
 <head>
@@ -486,11 +486,11 @@ SESSION_LIFETIME=120
     <div class=""container"">
         <div class=""header"">
             <div class=""logo"">LARAVEL <span class=""badge"">v11.x Starter</span></div>
-            <div>Dá»± Ã¡n: <strong>{projectName}</strong></div>
+            <div>Dự án: <strong>{projectName}</strong></div>
         </div>
 
         <div class=""card"">
-            <div class=""title"">ThÃ´ng sá»‘ mÃ´i trÆ°á»ng cá»¥c bá»™ (Novagon)</div>
+            <div class=""title"">Thông số môi trường cục bộ (Novagon)</div>
             <div class=""grid"">
                 <div class=""item"">
                     <div class=""item-label"">PHP Runtime</div>
@@ -506,9 +506,9 @@ SESSION_LIFETIME=120
                         <?php
                         try {{
                             $pdo = new PDO('mysql:host=127.0.0.1;port=3306;dbname={dbName}', 'root', '', [PDO::ATTR_TIMEOUT => 2]);
-                            echo '<span class=""ok"">âœ“ Sáºµn sÃ ng káº¿t ná»‘i</span>';
+                            echo '<span class=""ok"">✓ Sẵn sàng kết nối</span>';
                         }} catch (Exception $e) {{
-                            echo '<span class=""err"">ChÆ°a sáºµn sÃ ng: ' . htmlspecialchars($e->getMessage()) . '</span>';
+                            echo '<span class=""err"">Chưa sẵn sàng: ' . htmlspecialchars($e->getMessage()) . '</span>';
                         }}
                         ?>
                     </div>
@@ -516,9 +516,9 @@ SESSION_LIFETIME=120
             </div>
 
             <p style=""font-size: 13px; color: #94a3b8; margin-bottom: 18px;"">
-                ThÆ° má»¥c <code>public/</code> Ä‘Ã£ Ä‘Æ°á»£c Novagon tá»± Ä‘á»™ng nháº­n diá»‡n vÃ  cáº¥u hÃ¬nh Virtual Host <code>{projectName}.test</code>.
+                Thư mục <code>public/</code> đã được Novagon tự động nhận diện và cấu hình Virtual Host <code>{projectName}.test</code>.
             </p>
-            <a href=""http://127.0.0.1/phpmyadmin"" class=""btn"" target=""_blank"">Quáº£n lÃ½ Database trong phpMyAdmin &rarr;</a>
+            <a href=""http://127.0.0.1/phpmyadmin"" class=""btn"" target=""_blank"">Quản lý Database trong phpMyAdmin &rarr;</a>
         </div>
     </div>
 </body>
@@ -527,24 +527,24 @@ SESSION_LIFETIME=120
 
         // File routes/web.php
         string routesWeb = @"<?php
-// Routes cho á»©ng dá»¥ng
-// Báº¡n cÃ³ thá»ƒ cÃ i Ä‘áº·t Composer vÃ  náº¡p trá»n bá»™ vendor báº¥t cá»© lÃºc nÃ o.
+// Routes cho ứng dụng
+// Bạn có thể cài đặt Composer và nạp trọn bộ vendor bất cứ lúc nào.
 ";
         File.WriteAllText(Path.Combine(routesDir, "web.php"), routesWeb);
 
-        OnLog?.Invoke($"[QuickApp] ÄÃ£ táº¡o thÃ nh cÃ´ng dá»± Ã¡n Laravel '{projectName}' táº¡i {projectDir}");
+        OnLog?.Invoke($"[QuickApp] Đã tạo thành công dự án Laravel '{projectName}' tại {projectDir}");
         return true;
     }
 
     /// <summary>
-    /// Táº¡o dá»± Ã¡n Frontend tÄ©nh HTML5/CSS3/JS hiá»‡n Ä‘áº¡i
+    /// Tạo dự án Frontend tĩnh HTML5/CSS3/JS hiện đại
     /// </summary>
     public bool CreateStaticWebApp(string projectName, out string projectDir)
     {
         projectDir = Path.Combine(_wwwRoot, projectName);
         if (Directory.Exists(projectDir))
         {
-            OnLog?.Invoke($"Lá»—i: ThÆ° má»¥c dá»± Ã¡n '{projectName}' Ä‘Ã£ tá»“n táº¡i trong www/");
+            OnLog?.Invoke($"Lỗi: Thư mục dự án '{projectName}' đã tồn tại trong www/");
             return false;
         }
 
@@ -562,8 +562,8 @@ SESSION_LIFETIME=120
     <div class=""hero"">
         <div class=""badge"">Novagon Static App</div>
         <h1>{projectName}</h1>
-        <p>Dá»± Ã¡n Frontend HTML5/CSS/JS Ä‘Ã£ sáºµn sÃ ng phÃ¡t triá»ƒn trÃªn domain <strong>{projectName}.test</strong>.</p>
-        <button id=""btnAction"" class=""btn"">Nháº¥p vÃ o Ä‘Ã¢y</button>
+        <p>Dự án Frontend HTML5/CSS/JS đã sẵn sàng phát triển trên domain <strong>{projectName}.test</strong>.</p>
+        <button id=""btnAction"" class=""btn"">Nhấp vào đây</button>
         <div id=""output"" class=""output""></div>
     </div>
     <script src=""app.js""></script>
@@ -582,7 +582,7 @@ p { font-size: 15px; color: #94a3b8; margin-bottom: 24px; line-height: 1.6; }
 ";
 
         string jsContent = @"document.getElementById('btnAction').addEventListener('click', function() {
-    document.getElementById('output').innerText = 'âœ“ JavaScript hoáº¡t Ä‘á»™ng hoÃ n háº£o! ChÃºc báº¡n xÃ¢y dá»±ng website vui váº».';
+    document.getElementById('output').innerText = '✓ JavaScript hoạt động hoàn hảo! Chúc bạn xây dựng website vui vẻ.';
 });
 ";
 
@@ -590,12 +590,12 @@ p { font-size: 15px; color: #94a3b8; margin-bottom: 24px; line-height: 1.6; }
         File.WriteAllText(Path.Combine(projectDir, "style.css"), cssContent);
         File.WriteAllText(Path.Combine(projectDir, "app.js"), jsContent);
 
-        OnLog?.Invoke($"[QuickApp] ÄÃ£ táº¡o thÃ nh cÃ´ng dá»± Ã¡n Static Web '{projectName}' táº¡i {projectDir}");
+        OnLog?.Invoke($"[QuickApp] Đã tạo thành công dự án Static Web '{projectName}' tại {projectDir}");
         return true;
     }
 
     /// <summary>
-    /// Táº¡o dá»± Ã¡n WordPress 1-Click (Tá»± táº£i tá»« wordpress.org, giáº£i nÃ©n vÃ  cáº¥u hÃ¬nh toÃ n diá»‡n)
+    /// Tạo dự án WordPress 1-Click (Tự tải từ wordpress.org, giải nén và cấu hình toàn diện)
     /// </summary>
     public Task<(bool Success, string Message, string ProjectDir)> CreateWordPressAppAsync(
         string projectName, Action<int>? progressCallback = null)
@@ -615,7 +615,7 @@ p { font-size: 15px; color: #94a3b8; margin-bottom: 24px; line-height: 1.6; }
         string projectDir = Path.Combine(_wwwRoot, projectName);
         if (Directory.Exists(projectDir))
         {
-            return (false, $"ThÆ° má»¥c '{projectName}' Ä‘Ã£ tá»“n táº¡i trong www/", projectDir);
+            return (false, $"Thư mục '{projectName}' đã tồn tại trong www/", projectDir);
         }
 
         string zipPath = Path.Combine(_cacheDir, "wordpress-latest.zip");
@@ -623,11 +623,11 @@ p { font-size: 15px; color: #94a3b8; margin-bottom: 24px; line-height: 1.6; }
 
         try
         {
-            // 1. Táº£i WordPress náº¿u chÆ°a cÃ³ trong cache
+            // 1. Tải WordPress nếu chưa có trong cache
             if (!File.Exists(zipPath) || new FileInfo(zipPath).Length < 1024 * 1024)
             {
-                progressCallback?.Invoke(5, "Äang káº¿t ná»‘i tá»›i wordpress.org Ä‘á»ƒ táº£i báº£n má»›i nháº¥t...");
-                OnLog?.Invoke("Äang táº£i gÃ³i cÃ i Ä‘áº·t WordPress má»›i nháº¥t tá»« wordpress.org...");
+                progressCallback?.Invoke(5, "Đang kết nối tới wordpress.org để tải bản mới nhất...");
+                OnLog?.Invoke("Đang tải gói cài đặt WordPress mới nhất từ wordpress.org...");
                 string wpUrl = "https://wordpress.org/latest.zip";
 
                 using var response = await HttpClient.GetAsync(wpUrl, HttpCompletionOption.ResponseHeadersRead);
@@ -645,20 +645,20 @@ p { font-size: 15px; color: #94a3b8; margin-bottom: 24px; line-height: 1.6; }
                 {
                     await fileStream.WriteAsync(buffer.AsMemory(0, read));
                     totalRead += read;
-                    int percent = (int)(totalRead * 30 / totalBytes); // 5% - 35% cho bÆ°á»›c táº£i
-                    progressCallback?.Invoke(5 + percent, $"Äang táº£i WordPress tá»« wordpress.org ({percent * 100 / 30}%)...");
+                    int percent = (int)(totalRead * 30 / totalBytes); // 5% - 35% cho bước tải
+                    progressCallback?.Invoke(5 + percent, $"Đang tải WordPress từ wordpress.org ({percent * 100 / 30}%)...");
                 }
-                OnLog?.Invoke("ÄÃ£ táº£i xong gÃ³i WordPress.");
+                OnLog?.Invoke("Đã tải xong gói WordPress.");
             }
             else
             {
-                progressCallback?.Invoke(15, "ÄÃ£ cÃ³ sáºµn gÃ³i WordPress trong mÃ¡y (bá» qua bÆ°á»›c táº£i)...");
+                progressCallback?.Invoke(15, "Đã có sẵn gói WordPress trong máy (bỏ qua bước tải)...");
             }
 
-            // 2. Giáº£i nÃ©n trá»±c tiáº¿p vÃ o thÆ° má»¥c dá»± Ã¡n (KhÃ´ng dÃ¹ng MoveDirectory Ä‘á»ƒ trÃ¡nh lá»—i Access Denied)
+            // 2. Giải nén trực tiếp vào thư mục dự án (Không dùng MoveDirectory để tránh lỗi Access Denied)
             Directory.CreateDirectory(projectDir);
-            progressCallback?.Invoke(25, $"Äang giáº£i nÃ©n mÃ£ nguá»“n WordPress vÃ o www/{projectName}...");
-            OnLog?.Invoke($"Äang giáº£i nÃ©n WordPress vÃ o www/{projectName}...");
+            progressCallback?.Invoke(25, $"Đang giải nén mã nguồn WordPress vào www/{projectName}...");
+            OnLog?.Invoke($"Đang giải nén WordPress vào www/{projectName}...");
 
             using (var archive = ZipFile.OpenRead(zipPath))
             {
@@ -681,7 +681,7 @@ p { font-size: 15px; color: #94a3b8; margin-bottom: 24px; line-height: 1.6; }
                         continue;
 
                     string destPath = Path.GetFullPath(Path.Combine(projectDir, relativePath));
-                    // Báº£o vá»‡ trÃ¡nh path traversal
+                    // Bảo vệ tránh path traversal
                     if (!destPath.StartsWith(projectDir, StringComparison.OrdinalIgnoreCase))
                         continue;
 
@@ -703,24 +703,24 @@ p { font-size: 15px; color: #94a3b8; margin-bottom: 24px; line-height: 1.6; }
                     if (extractedCount % 250 == 0 || extractedCount == totalEntries)
                     {
                         int pct = 25 + (int)(extractedCount * 45L / Math.Max(totalEntries, 1)); // 25% -> 70%
-                        progressCallback?.Invoke(pct, $"Äang giáº£i nÃ©n WordPress ({extractedCount}/{totalEntries} tá»‡p)...");
+                        progressCallback?.Invoke(pct, $"Đang giải nén WordPress ({extractedCount}/{totalEntries} tệp)...");
                     }
                 }
             }
 
-            // 3. Tá»± táº¡o Database náº¿u Ä‘Æ°á»£c chá»n (náº¿u lá»—i dá»«ng ngay láº­p tá»©c)
+            // 3. Tự tạo Database nếu được chọn (nếu lỗi dừng ngay lập tức)
             if (createDb)
             {
-                progressCallback?.Invoke(75, $"Äang tá»± Ä‘á»™ng khá»Ÿi táº¡o Database MySQL '{dbName}'...");
+                progressCallback?.Invoke(75, $"Đang tự động khởi tạo Database MySQL '{dbName}'...");
                 if (!EnsureDatabaseCreated(dbName))
                 {
-                    string err = $"KhÃ´ng thá»ƒ táº¡o Database '{dbName}'. QuÃ¡ trÃ¬nh cÃ i Ä‘áº·t Ä‘Ã£ dá»«ng láº¡i.";
-                    OnLog?.Invoke($"[QuickApp] âœ— {err}");
+                    string err = $"Không thể tạo Database '{dbName}'. Quá trình cài đặt đã dừng lại.";
+                    OnLog?.Invoke($"[QuickApp] ✗ {err}");
                     return (false, err, projectDir);
                 }
             }
 
-            progressCallback?.Invoke(85, "Äang táº¡o file cáº¥u hÃ¬nh wp-config.php vÃ  cÃ¡c khÃ³a báº£o máº­t...");
+            progressCallback?.Invoke(85, "Đang tạo file cấu hình wp-config.php và các khóa bảo mật...");
             string wpConfigSample = Path.Combine(projectDir, "wp-config-sample.php");
             string wpConfigTarget = Path.Combine(projectDir, "wp-config.php");
 
@@ -732,7 +732,7 @@ p { font-size: 15px; color: #94a3b8; margin-bottom: 24px; line-height: 1.6; }
                 content = content.Replace("password_here", "");
                 content = content.Replace("localhost", "127.0.0.1");
 
-                // Tá»± sinh 8 Salt Keys ngáº«u nhiÃªn
+                // Tự sinh 8 Salt Keys ngẫu nhiên
                 string[] saltKeys = { "AUTH_KEY", "SECURE_AUTH_KEY", "LOGGED_IN_KEY", "NONCE_KEY", "AUTH_SALT", "SECURE_AUTH_SALT", "LOGGED_IN_SALT", "NONCE_SALT" };
                 foreach (var salt in saltKeys)
                 {
@@ -747,10 +747,10 @@ p { font-size: 15px; color: #94a3b8; margin-bottom: 24px; line-height: 1.6; }
                         content = content.Replace(targetAltPlaceholder, replacement);
                 }
 
-                // Bá»• sung cÃ¡c cá» cáº¥u hÃ¬nh tá»‘i Æ°u cá»§a Novagon: Direct FS (cÃ i plugin khÃ´ng há»i FTP) vÃ  WP_MEMORY_LIMIT
+                // Bổ sung các cờ cấu hình tối ưu của Novagon: Direct FS (cài plugin không hỏi FTP) và WP_MEMORY_LIMIT
                 var extraConfigs = new StringBuilder();
                 extraConfigs.AppendLine();
-                extraConfigs.AppendLine("/* Tá»‘i Æ°u hÃ³a bá»Ÿi Novagon Local Environment */");
+                extraConfigs.AppendLine("/* Tối ưu hóa bởi Novagon Local Environment */");
                 extraConfigs.AppendLine("define('FS_METHOD', 'direct');");
                 extraConfigs.AppendLine("define('WP_MEMORY_LIMIT', '256M');");
                 extraConfigs.AppendLine();
@@ -768,14 +768,14 @@ p { font-size: 15px; color: #94a3b8; margin-bottom: 24px; line-height: 1.6; }
                 File.WriteAllText(wpConfigTarget, content);
             }
 
-            progressCallback?.Invoke(100, "HoÃ n táº¥t khá»Ÿi táº¡o WordPress!");
-            OnLog?.Invoke($"[QuickApp] ÄÃ£ táº¡o xong WordPress dá»± Ã¡n '{projectName}' (Database: '{dbName}').");
-            return (true, "Khá»Ÿi táº¡o WordPress thÃ nh cÃ´ng!", projectDir);
+            progressCallback?.Invoke(100, "Hoàn tất khởi tạo WordPress!");
+            OnLog?.Invoke($"[QuickApp] Đã tạo xong WordPress dự án '{projectName}' (Database: '{dbName}').");
+            return (true, "Khởi tạo WordPress thành công!", projectDir);
         }
         catch (Exception ex)
         {
-            OnLog?.Invoke($"[QuickApp] Lá»—i táº¡o WordPress: {ex.Message}");
-            return (false, $"Lá»—i cÃ i Ä‘áº·t WordPress: {ex.Message}", projectDir);
+            OnLog?.Invoke($"[QuickApp] Lỗi tạo WordPress: {ex.Message}");
+            return (false, $"Lỗi cài đặt WordPress: {ex.Message}", projectDir);
         }
     }
 
@@ -792,4 +792,3 @@ p { font-size: 15px; color: #94a3b8; margin-bottom: 24px; line-height: 1.6; }
         return sb.ToString().Replace("'", "\\'");
     }
 }
-

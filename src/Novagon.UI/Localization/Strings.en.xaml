@@ -1,0 +1,138 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- Header & App -->
+    <sys:String x:Key="App_Title">NOVAGON - Local Development Environment</sys:String>
+    <sys:String x:Key="Admin_Badge">Running as Administrator</sys:String>
+    <sys:String x:Key="NonAdmin_Badge">Standard User Privileges</sys:String>
+    <sys:String x:Key="Menu_Settings">Settings</sys:String>
+
+    <!-- Top Action Buttons -->
+    <sys:String x:Key="Btn_StartAll">Start All</sys:String>
+    <sys:String x:Key="Btn_StopAll">Stop All</sys:String>
+    <sys:String x:Key="Btn_ReloadVHosts">Reload VHosts</sys:String>
+    <sys:String x:Key="Btn_Database">Database</sys:String>
+    <sys:String x:Key="Btn_Terminal">Terminal</sys:String>
+    <sys:String x:Key="Btn_RootWww">Root (www)</sys:String>
+
+    <!-- Status Bar / Cards -->
+    <sys:String x:Key="Svc_WebServer">WEB SERVER</sys:String>
+    <sys:String x:Key="Svc_Database">DATABASE</sys:String>
+    <sys:String x:Key="Svc_PhpFastCgi">PHP FASTCGI</sys:String>
+    <sys:String x:Key="Svc_Redis">REDIS CACHE</sys:String>
+    <sys:String x:Key="Status_Stopped">Stopped</sys:String>
+    <sys:String x:Key="Status_Running">Online</sys:String>
+    <sys:String x:Key="Status_PortPrefix">Port:</sys:String>
+    <sys:String x:Key="Overall_Online">Running (Online)</sys:String>
+    <sys:String x:Key="Overall_Stopped">Start All (Stopped)</sys:String>
+    <sys:String x:Key="Status_NotInstalled">Not Installed</sys:String>
+    <sys:String x:Key="Status_NotInstalled_Short">○ Not Installed</sys:String>
+    <sys:String x:Key="Status_NotInstalled_Hub">Not Installed (Hub)</sys:String>
+    <sys:String x:Key="Status_Running_Badge">● Running</sys:String>
+    <sys:String x:Key="Status_Faulted_Badge">⚠ Error</sys:String>
+    <sys:String x:Key="Status_Starting_Badge">⏳ Starting...</sys:String>
+    <sys:String x:Key="Status_Stopped_Badge">○ Stopped</sys:String>
+
+    <!-- Main Navigation Tabs -->
+    <sys:String x:Key="Tab_VHosts">Virtual Hosts</sys:String>
+    <sys:String x:Key="Tab_QuickApp">Quick App (Create)</sys:String>
+    <sys:String x:Key="Tab_Runtimes">Runtimes Config</sys:String>
+    <sys:String x:Key="Tab_Hub">Runtimes Hub</sys:String>
+    <sys:String x:Key="Tab_Logs">Logs</sys:String>
+
+    <!-- Tab 1: Virtual Hosts -->
+    <sys:String x:Key="Desc_VHosts">List of auto-detected projects in www/ (TLD: .test)</sys:String>
+    <sys:String x:Key="Col_ProjectName">Project Name</sys:String>
+    <sys:String x:Key="Col_Domain">Domain</sys:String>
+    <sys:String x:Key="Col_DocRoot">Document Root</sys:String>
+    <sys:String x:Key="Col_Actions">Actions</sys:String>
+    <sys:String x:Key="Btn_OpenWebsite">Open</sys:String>
+    <sys:String x:Key="Btn_OpenFolder">Folder</sys:String>
+    <sys:String x:Key="Btn_DeleteProject">Delete</sys:String>
+    <sys:String x:Key="Empty_VHosts">No projects found in www/. Create a project in the 'Quick App' tab or add a folder in www/.</sys:String>
+
+    <!-- Tab 2: Quick App Creation -->
+    <sys:String x:Key="Lbl_ProjectName">Project folder name:</sys:String>
+    <sys:String x:Key="Hint_VHostAuto">Virtual Host automatically activates right after creation</sys:String>
+    <sys:String x:Key="Lbl_ConfigOptions">Configuration options:</sys:String>
+    <sys:String x:Key="Chk_AutoCreateDb">Automatically create MySQL Database</sys:String>
+    <sys:String x:Key="Chk_OpenBrowser">Open browser after creation</sys:String>
+    <sys:String x:Key="Chk_OpenExplorer">Open project folder in Explorer</sys:String>
+
+    <!-- Quick App Cards -->
+    <sys:String x:Key="Card_Wp_Title">WordPress</sys:String>
+    <sys:String x:Key="Card_Wp_Badge">CMS v6.x</sys:String>
+    <sys:String x:Key="Card_Wp_Desc">Automatically download latest WordPress from wordpress.org, generate standardized wp-config.php (Security Salts, Direct FS, 256M RAM), create MySQL Database and VHost.</sys:String>
+    <sys:String x:Key="Btn_CreateWp">⚡ Create WordPress 1-Click</sys:String>
+
+    <sys:String x:Key="Card_Laravel_Title">Laravel</sys:String>
+    <sys:String x:Key="Card_Laravel_Badge">Framework v11.x</sys:String>
+    <sys:String x:Key="Card_Laravel_Desc">Install 100% standard Laravel project via Composer (complete Framework, Artisan CLI, Vendor packages), configure .env MySQL and point VHost to public/.</sys:String>
+    <sys:String x:Key="Btn_CreateLaravel">⚡ Create Laravel (Composer)</sys:String>
+
+    <sys:String x:Key="Card_Php_Title">PHP Project (Blank)</sys:String>
+    <sys:String x:Key="Card_Php_Badge">PHP 8.x Starter</sys:String>
+    <sys:String x:Key="Card_Php_Desc">Initialize blank PHP project with MySQL PDO connection check, PHP runtime version, Web Server config, and fast PHP Info link.</sys:String>
+    <sys:String x:Key="Btn_CreatePhp">⚡ Create Blank PHP</sys:String>
+
+    <sys:String x:Key="Card_Static_Title">Static Web (HTML5)</sys:String>
+    <sys:String x:Key="Card_Static_Badge">Frontend Template</sys:String>
+    <sys:String x:Key="Card_Static_Desc">Standard static web project structure including index.html, style.css, and app.js with modern responsive styling, ready for Landing Page or Web UI.</sys:String>
+    <sys:String x:Key="Btn_CreateStatic">⚡ Create Static Web</sys:String>
+
+    <!-- Tab 3: Runtime Settings -->
+    <sys:String x:Key="Lbl_SelectPhp">Select PHP version:</sys:String>
+    <sys:String x:Key="Lbl_SelectDb">Select MySQL / MariaDB version:</sys:String>
+    <sys:String x:Key="Lbl_WebEngine">Web Server Engine:</sys:String>
+    <sys:String x:Key="Lbl_PhpExtTitle">PHP Extension Manager (Click to toggle in php.ini):</sys:String>
+
+    <!-- Tab 4: Hub Downloads -->
+    <sys:String x:Key="Lbl_HubTitle">Automatically download and install PHP, MySQL, Redis versions (1-Click, no manual zip config):</sys:String>
+    <sys:String x:Key="Col_PkgName">Runtime Package</sys:String>
+    <sys:String x:Key="Col_PkgCat">Category</sys:String>
+    <sys:String x:Key="Col_PkgSize">Size</sys:String>
+    <sys:String x:Key="Btn_InstallNow">Download &amp; Install</sys:String>
+
+    <!-- Tab 5: Logs -->
+    <sys:String x:Key="Btn_ClearLogs">Clear Logs</sys:String>
+
+    <!-- Context Menu Tray -->
+    <sys:String x:Key="Tray_OpenApp">Open Novagon UI</sys:String>
+    <sys:String x:Key="Tray_StartAll">Start All Services</sys:String>
+    <sys:String x:Key="Tray_StopAll">Stop All Services</sys:String>
+    <sys:String x:Key="Tray_ReloadVHosts">Reload Virtual Hosts</sys:String>
+    <sys:String x:Key="Tray_Db">Database (phpMyAdmin)</sys:String>
+    <sys:String x:Key="Tray_Terminal">Command Line (Terminal)</sys:String>
+    <sys:String x:Key="Tray_RootWww">Root Directory (www)</sys:String>
+    <sys:String x:Key="Tray_Settings">Settings...</sys:String>
+    <sys:String x:Key="Tray_Exit">Exit Completely</sys:String>
+
+    <!-- Settings Window -->
+    <sys:String x:Key="Settings_Title">Novagon Settings</sys:String>
+    <sys:String x:Key="Settings_SectionGeneral">General Settings</sys:String>
+    <sys:String x:Key="Settings_Language">Display Language:</sys:String>
+    <sys:String x:Key="Settings_Language_Vi">🇻🇳 Tiếng Việt (Vietnamese)</sys:String>
+    <sys:String x:Key="Settings_Language_En">🇬🇧 English</sys:String>
+    <sys:String x:Key="Settings_Tld">Default Virtual Host TLD:</sys:String>
+    <sys:String x:Key="Settings_TldHint">Default: test (generates: project-name.test)</sys:String>
+    <sys:String x:Key="Settings_AutoStart">Automatically start all services on Novagon launch</sys:String>
+    <sys:String x:Key="Btn_SaveSettings">Save Settings</sys:String>
+    <sys:String x:Key="Btn_Close">Close</sys:String>
+
+    <!-- Dialogs & Notifications -->
+    <sys:String x:Key="Msg_EnterProjectName">Please enter a project name!</sys:String>
+    <sys:String x:Key="Msg_ProjectExists">Project folder '{0}' already exists in www/!</sys:String>
+    <sys:String x:Key="Msg_ConfirmDelete">Are you sure you want to delete project '{0}'?&#x0a;&#x0a;Domain: {1}&#x0a;Folder: {2}&#x0a;&#x0a;This action will permanently delete the project folder and corresponding Virtual Host configuration!</sys:String>
+    <sys:String x:Key="Msg_DeleteTitle">Confirm Project Deletion</sys:String>
+    <sys:String x:Key="Msg_DeleteSuccess">Project '{0}' deleted successfully!</sys:String>
+    <sys:String x:Key="Msg_DeleteError">Unable to delete project: {0}</sys:String>
+    <sys:String x:Key="Msg_BrowserError">Unable to open browser: {0}</sys:String>
+    <sys:String x:Key="Msg_StartingServices">Activating Nginx, PHP, and MariaDB MySQL servers...</sys:String>
+    <sys:String x:Key="Msg_CreatingLaravel">Initializing Laravel project via Composer...</sys:String>
+    <sys:String x:Key="Msg_CreatingWordPress">Preparing WordPress package from wordpress.org...</sys:String>
+    <sys:String x:Key="Msg_DownloadingPkg">Starting download of {0}...</sys:String>
+    <sys:String x:Key="Msg_Processing">Processing...</sys:String>
+    <sys:String x:Key="Msg_NoticeTitle">Notice</sys:String>
+    <sys:String x:Key="Msg_ErrorTitle">Error</sys:String>
+</ResourceDictionary>

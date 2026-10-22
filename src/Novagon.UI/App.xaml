@@ -1,53 +1,58 @@
-﻿<Application x:Class="Novagon.UI.App"
+<Application x:Class="Novagon.UI.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:Novagon.UI"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <!-- Global Classic Light ContextMenu & MenuItem (Äá»™ tÆ°Æ¡ng pháº£n cao, ná»•i báº­t chá»¯) -->
-        <Style TargetType="ContextMenu">
-            <Setter Property="SnapsToDevicePixels" Value="True"/>
-            <Setter Property="OverridesDefaultStyle" Value="True"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ContextMenu">
-                        <Border Background="#ffffff" BorderBrush="#94a3b8" BorderThickness="1" CornerRadius="4" Padding="4">
-                            <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle"/>
-                        </Border>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Localization/Strings.vi.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
 
-        <Style TargetType="MenuItem">
-            <Setter Property="OverridesDefaultStyle" Value="True"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="MenuItem">
-                        <Border x:Name="Bd" Background="Transparent" CornerRadius="3" Padding="14,7" Cursor="Hand" Margin="0,1">
-                            <ContentPresenter x:Name="Cp" ContentSource="Header" TextElement.Foreground="#0f172a" TextElement.FontSize="13" TextElement.FontWeight="SemiBold"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsHighlighted" Value="True">
-                                <Setter TargetName="Bd" Property="Background" Value="#0284c7"/>
-                                <Setter TargetName="Cp" Property="TextElement.Foreground" Value="#ffffff"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+            <!-- Global Classic Light ContextMenu & MenuItem (Độ tương phản cao, nổi bật chữ) -->
+            <Style TargetType="ContextMenu">
+                <Setter Property="SnapsToDevicePixels" Value="True"/>
+                <Setter Property="OverridesDefaultStyle" Value="True"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ContextMenu">
+                            <Border Background="#ffffff" BorderBrush="#94a3b8" BorderThickness="1" CornerRadius="4" Padding="4">
+                                <StackPanel IsItemsHost="True" KeyboardNavigation.DirectionalNavigation="Cycle"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
 
-        <Style TargetType="Separator">
-            <Setter Property="OverridesDefaultStyle" Value="True"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Separator">
-                        <Border Background="#cbd5e1" Height="1" Margin="4,3"/>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
+            <Style TargetType="MenuItem">
+                <Setter Property="OverridesDefaultStyle" Value="True"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="MenuItem">
+                            <Border x:Name="Bd" Background="Transparent" CornerRadius="3" Padding="14,7" Cursor="Hand" Margin="0,1">
+                                <ContentPresenter x:Name="Cp" ContentSource="Header" TextElement.Foreground="#0f172a" TextElement.FontSize="13" TextElement.FontWeight="SemiBold"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsHighlighted" Value="True">
+                                    <Setter TargetName="Bd" Property="Background" Value="#0284c7"/>
+                                    <Setter TargetName="Cp" Property="TextElement.Foreground" Value="#ffffff"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+            <Style TargetType="Separator">
+                <Setter Property="OverridesDefaultStyle" Value="True"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="Separator">
+                            <Border Background="#cbd5e1" Height="1" Margin="4,3"/>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>
-

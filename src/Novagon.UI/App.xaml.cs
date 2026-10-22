@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Windows;
-using System.Windows.Threading;
+using Novagon.UI.Localization;
 
 namespace Novagon.UI;
 
@@ -11,9 +11,16 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        // Khởi tạo hệ thống đa ngôn ngữ (đọc cài đặt lưu trước đó)
+        LocalizationManager.Initialize();
+
         AppDomain.CurrentDomain.UnhandledException += (s, args) =>
         {
-            File.AppendAllText("crash.log", $"[{DateTime.Now}] AppDomain Exception: {args.ExceptionObject}\n");
+            try
+            {
+                File.AppendAllText("crash.log", $"[{DateTime.Now}] AppDomain Exception: {args.ExceptionObject}\n");
+            }
+            catch { }
         };
 
         DispatcherUnhandledException += (s, args) =>
@@ -21,14 +28,10 @@ public partial class App : Application
             try
             {
                 File.AppendAllText("crash.log", $"[{DateTime.Now}] Dispatcher Exception: {args.Exception}\n");
-                MessageBox.Show($"ÄÃ£ xáº£y ra lá»—i:\n{args.Exception.Message}\n\nChi tiáº¿t xem trong crash.log", "Lá»—i á»©ng dá»¥ng", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Đã xảy ra sự cố không mong muốn:\n{args.Exception.Message}\n\nChi tiết kỹ thuật đã được ghi lại trong file crash.log.", "Thông báo", MessageBoxButton.OK, MessageBoxImage.Error);
                 args.Handled = true;
             }
-            catch
-            {
-            }
+            catch { }
         };
     }
 }
-
-

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -16,8 +16,10 @@ public record AvailablePackage(
     string SizeDescription
 )
 {
+    public string DisplayName { get; set; } = DisplayName;
     public bool IsInstalled { get; set; }
-    public string ActionText => IsInstalled ? "âœ“ ÄÃ£ cÃ i Ä‘áº·t" : "Táº£i vá» (1-Click)";
+    public string? CustomActionText { get; set; }
+    public string ActionText => CustomActionText ?? (IsInstalled ? "✓ Đã cài đặt" : "Tải về (1-Click)");
     public bool CanInstall => !IsInstalled;
 }
 
@@ -35,11 +37,11 @@ public class PackageManager
     {
         var packages = new List<AvailablePackage>
         {
-            new("php", "8.3.10", "PHP 8.3.10 (Khuyáº¿n nghá»‹, NTS x64)",
+            new("php", "8.3.10", "PHP 8.3.10 (Khuyến nghị, NTS x64)",
                 "https://downloads.php.net/~windows/releases/archives/php-8.3.10-nts-Win32-vs16-x64.zip",
                 "php-8.3.10", "~32 MB"),
 
-            new("php", "8.2.20", "PHP 8.2.20 (LTS á»•n Ä‘á»‹nh, NTS x64)",
+            new("php", "8.2.20", "PHP 8.2.20 (LTS ổn định, NTS x64)",
                 "https://windows.php.net/downloads/releases/archives/php-8.2.20-nts-Win32-vs16-x64.zip",
                 "php-8.2.20", "~31 MB"),
 
@@ -47,7 +49,7 @@ public class PackageManager
                 "https://windows.php.net/downloads/releases/archives/php-8.1.29-nts-Win32-vs16-x64.zip",
                 "php-8.1.29", "~30 MB"),
 
-            new("mysql", "10.11.8", "MariaDB 10.11.8 (TÆ°Æ¡ng thÃ­ch MySQL 8.0, x64)",
+            new("mysql", "10.11.8", "MariaDB 10.11.8 (Tương thích MySQL 8.0, x64)",
                 "https://archive.mariadb.org/mariadb-10.11.8/winx64-packages/mariadb-10.11.8-winx64.zip",
                 "mariadb-10.11.8-winx64", "~85 MB"),
 
@@ -56,7 +58,7 @@ public class PackageManager
                 "redis-5.0.14", "~5 MB")
         };
 
-        // Kiá»ƒm tra xem package nÃ o Ä‘Ã£ cÃ i Ä‘áº·t
+        // Kiểm tra xem package nào đã cài đặt
         foreach (var pkg in packages)
         {
             string pkgPath = Path.Combine(_baseBinDir, pkg.Category, pkg.TargetFolderName);
@@ -77,7 +79,7 @@ public class PackageManager
         try
         {
             Directory.CreateDirectory(catDir);
-            onProgress?.Invoke(5, $"Äang káº¿t ná»‘i tá»›i mÃ¡y chá»§ táº£i {pkg.DisplayName}...");
+            onProgress?.Invoke(5, $"Đang kết nối tới máy chủ tải {pkg.DisplayName}...");
 
             using (var response = await _httpClient.GetAsync(pkg.DownloadUrl, HttpCompletionOption.ResponseHeadersRead))
             {
@@ -104,21 +106,21 @@ public class PackageManager
                         if (pct > lastPct && pct <= 90)
                         {
                             lastPct = pct;
-                            onProgress?.Invoke(pct, $"Äang táº£i {pkg.DisplayName}: {receivedBytes / 1024 / 1024} MB / {totalBytes / 1024 / 1024} MB ({pct}%)...");
+                            onProgress?.Invoke(pct, $"Đang tải {pkg.DisplayName}: {receivedBytes / 1024 / 1024} MB / {totalBytes / 1024 / 1024} MB ({pct}%)...");
                         }
                     }
                 }
             }
 
-            onProgress?.Invoke(92, "Äang giáº£i nÃ©n gÃ³i runtime...");
+            onProgress?.Invoke(92, "Đang giải nén gói runtime...");
 
-            // Giáº£i nÃ©n gÃ³i vÃ o thÆ° má»¥c Ä‘Ã­ch
+            // Giải nén gói vào thư mục đích
             if (Directory.Exists(targetDir))
             {
                 Directory.Delete(targetDir, true);
             }
 
-            // Vá»›i MariaDB, file zip chá»©a sáºµn thÆ° má»¥c con `mariadb-10.11.8-winx64/`
+            // Với MariaDB, file zip chứa sẵn thư mục con `mariadb-10.11.8-winx64/`
             if (pkg.Category == "mysql")
             {
                 ZipFile.ExtractToDirectory(tempZip, catDir, true);
@@ -129,19 +131,19 @@ public class PackageManager
                 ZipFile.ExtractToDirectory(tempZip, targetDir, true);
             }
 
-            // Náº¿u lÃ  gÃ³i PHP, tá»± Ä‘á»™ng sinh php.ini vá»›i cáº¥u hÃ¬nh tá»‘i Æ°u
+            // Nếu là gói PHP, tự động sinh php.ini với cấu hình tối ưu
             if (pkg.Category == "php")
             {
                 ConfigurePhpIni(targetDir);
             }
 
-            onProgress?.Invoke(100, $"ÄÃ£ cÃ i Ä‘áº·t {pkg.DisplayName} thÃ nh cÃ´ng!");
+            onProgress?.Invoke(100, $"Đã cài đặt {pkg.DisplayName} thành công!");
             pkg.IsInstalled = true;
-            return (true, $"CÃ i Ä‘áº·t {pkg.DisplayName} hoÃ n táº¥t.");
+            return (true, $"Cài đặt {pkg.DisplayName} hoàn tất.");
         }
         catch (Exception ex)
         {
-            return (false, $"Lá»—i cÃ i Ä‘áº·t {pkg.DisplayName}: {ex.Message}");
+            return (false, $"Lỗi cài đặt {pkg.DisplayName}: {ex.Message}");
         }
         finally
         {
@@ -182,4 +184,3 @@ public class PackageManager
         catch { }
     }
 }
-

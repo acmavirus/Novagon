@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:tb="http://www.hardcodet.net/taskbar"
-        Title="NOVAGON - Local Development Environment"
+        Title="{DynamicResource App_Title}"
         Height="570" Width="870"
         MinHeight="480" MinWidth="820"
         WindowStartupLocation="CenterScreen"
@@ -11,7 +11,7 @@
         FontFamily="Segoe UI">
 
     <Window.Resources>
-        <!-- 1. Normal Action Button (Reload, Terminal, Root www, XÃ³a Logs) -->
+        <!-- 1. Normal Action Button (Reload, Terminal, Root www, Xóa Logs) -->
         <Style x:Key="ActionButton" TargetType="Button">
             <Setter Property="Background" Value="#ffffff"/>
             <Setter Property="Foreground" Value="#0f172a"/>
@@ -54,7 +54,7 @@
             </Setter>
         </Style>
 
-        <!-- 2. Primary Start Button (Äá»™c láº­p, khÃ´ng bá»‹ Ä‘Ã¨ hover) -->
+        <!-- 2. Primary Start Button (Độc lập, không bị đè hover) -->
         <Style x:Key="PrimaryStartButton" TargetType="Button">
             <Setter Property="Background" Value="#15803d"/>
             <Setter Property="Foreground" Value="#ffffff"/>
@@ -97,7 +97,7 @@
             </Setter>
         </Style>
 
-        <!-- 3. Stop Button (Äá»™c láº­p, rÃµ chá»¯ khi disabled, khÃ´ng bá»‹ bá»£t há»“ng) -->
+        <!-- 3. Stop Button -->
         <Style x:Key="StopButton" TargetType="Button">
             <Setter Property="Background" Value="#dc2626"/>
             <Setter Property="Foreground" Value="#ffffff"/>
@@ -140,7 +140,7 @@
             </Setter>
         </Style>
 
-        <!-- 4. Warning Admin Button (Cháº¡y quyá»n Admin) -->
+        <!-- 4. Warning Admin Button -->
         <Style x:Key="WarningAdminButton" TargetType="Button">
             <Setter Property="Background" Value="#d97706"/>
             <Setter Property="Foreground" Value="#ffffff"/>
@@ -312,7 +312,37 @@
             </Setter>
         </Style>
 
-        <!-- Service Card Style (Classic Clean White Border, Sáº¯c nÃ©t) -->
+        <!-- Settings Icon Button Style -->
+        <Style x:Key="SettingsIconButton" TargetType="Button">
+            <Setter Property="Background" Value="#ffffff"/>
+            <Setter Property="BorderBrush" Value="#cbd5e1"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="7"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="5" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#f1f5f9"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#94a3b8"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#e2e8f0"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Service Card Style (Classic Clean White Border) -->
         <Style x:Key="ServiceCard" TargetType="Border">
             <Setter Property="Background" Value="#ffffff"/>
             <Setter Property="CornerRadius" Value="4"/>
@@ -349,23 +379,23 @@
                         TrayLeftMouseDown="TrayIcon_TrayLeftMouseDown">
             <tb:TaskbarIcon.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Start All" Click="BtnStartAll_Click"/>
-                    <MenuItem Header="Stop All" Click="BtnStopAll_Click"/>
-                    <MenuItem Header="Reload Virtual Hosts" Click="BtnReload_Click"/>
+                    <MenuItem Header="{DynamicResource Btn_StartAll}" Click="BtnStartAll_Click"/>
+                    <MenuItem Header="{DynamicResource Btn_StopAll}" Click="BtnStopAll_Click"/>
+                    <MenuItem Header="{DynamicResource Btn_ReloadVHosts}" Click="BtnReload_Click"/>
                     <Separator/>
-                    <MenuItem Header="Database (phpMyAdmin)" Click="BtnDatabase_Click"/>
-                    <MenuItem Header="Terminal" Click="BtnTerminal_Click"/>
-                    <MenuItem Header="Root (www)" Click="BtnOpenWww_Click"/>
-                    <Separator/>
-                    <MenuItem Header="Show Dashboard" Click="MenuShowDashboard_Click"/>
-                    <MenuItem Header="Exit" Click="MenuExit_Click"/>
+                    <MenuItem Header="{DynamicResource Tray_Db}" Click="BtnDatabase_Click"/>
+                    <MenuItem Header="{DynamicResource Tray_Terminal}" Click="BtnTerminal_Click"/>
+                    <MenuItem Header="{DynamicResource Tray_RootWww}" Click="BtnOpenWww_Click"/>
+                    <MenuItem Header="{DynamicResource Tray_Settings}" Click="MenuSettings_Click"/>
+                    <MenuItem Header="{DynamicResource Tray_OpenApp}" Click="MenuShowDashboard_Click"/>
+                    <MenuItem Header="{DynamicResource Tray_Exit}" Click="MenuExit_Click"/>
                 </ContextMenu>
             </tb:TaskbarIcon.ContextMenu>
         </tb:TaskbarIcon>
 
-        <!-- 1. Header -->
+        <!-- 1. Header with Language Switcher -->
         <Grid Grid.Row="0" Margin="0,0,0,14">
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Left">
                 <Border CornerRadius="6" Width="30" Height="30" Margin="0,0,10,0" ClipToBounds="True">
                     <Image Source="/Assets/novagon.png" Stretch="UniformToFill"/>
                 </Border>
@@ -373,9 +403,17 @@
                 <Border Background="#e2e8f0" BorderBrush="#cbd5e1" BorderThickness="1" CornerRadius="4" Padding="6,2" Margin="10,0,0,0" VerticalAlignment="Center">
                     <TextBlock Text="v1.0.0" FontSize="11" FontWeight="Bold" Foreground="#0f172a"/>
                 </Border>
-                <Button x:Name="BtnElevate" Content="Cháº¡y quyá»n Administrator"
-                        Style="{StaticResource WarningAdminButton}" Visibility="Collapsed" Click="BtnElevate_Click" />
+                <Button x:Name="BtnElevate" Content="{DynamicResource Admin_Badge}"
+                        Style="{StaticResource WarningAdminButton}" Visibility="Collapsed" Click="BtnElevate_Click" Margin="10,0,0,0"/>
             </StackPanel>
+
+            <!-- Settings Button (Icon bánh răng) -->
+            <Button x:Name="BtnSettings" HorizontalAlignment="Right" VerticalAlignment="Center"
+                    Style="{StaticResource SettingsIconButton}" Click="BtnSettings_Click"
+                    ToolTip="{DynamicResource Menu_Settings}">
+                <Path Data="M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z"
+                      Fill="#334155" Stretch="Uniform" Width="18" Height="18"/>
+            </Button>
         </Grid>
 
         <!-- 2. Action Bar (Classic High Contrast Button Row) -->
@@ -383,17 +421,17 @@
             <Button x:Name="BtnStartAll" Style="{StaticResource PrimaryStartButton}" Click="BtnStartAll_Click" Padding="16,8">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <Ellipse x:Name="StatusDot" Width="9" Height="9" Fill="#ef4444" Stroke="#ffffff" StrokeThickness="1.5" Margin="0,0,8,0"/>
-                    <TextBlock x:Name="TxtStatus" Text="Start All (Stopped)" FontWeight="Bold"/>
+                    <TextBlock x:Name="TxtStatus" Text="{DynamicResource Overall_Stopped}" FontWeight="Bold"/>
                 </StackPanel>
             </Button>
-            <Button x:Name="BtnStopAll" Content="Stop All" Style="{StaticResource StopButton}" Click="BtnStopAll_Click" IsEnabled="False" Padding="16,8"/>
-            <Button x:Name="BtnReload" Content="Reload VHosts" Style="{StaticResource ActionButton}" Click="BtnReload_Click"/>
-            <Button x:Name="BtnDatabase" Content="Database" Style="{StaticResource ActionButton}" Click="BtnDatabase_Click"/>
-            <Button x:Name="BtnTerminal" Content="Terminal" Style="{StaticResource ActionButton}" Click="BtnTerminal_Click"/>
-            <Button x:Name="BtnOpenWww" Content="Root (www)" Style="{StaticResource ActionButton}" Click="BtnOpenWww_Click"/>
+            <Button x:Name="BtnStopAll" Content="{DynamicResource Btn_StopAll}" Style="{StaticResource StopButton}" Click="BtnStopAll_Click" IsEnabled="False" Padding="16,8"/>
+            <Button x:Name="BtnReload" Content="{DynamicResource Btn_ReloadVHosts}" Style="{StaticResource ActionButton}" Click="BtnReload_Click"/>
+            <Button x:Name="BtnDatabase" Content="{DynamicResource Btn_Database}" Style="{StaticResource ActionButton}" Click="BtnDatabase_Click"/>
+            <Button x:Name="BtnTerminal" Content="{DynamicResource Btn_Terminal}" Style="{StaticResource ActionButton}" Click="BtnTerminal_Click"/>
+            <Button x:Name="BtnOpenWww" Content="{DynamicResource Btn_RootWww}" Style="{StaticResource ActionButton}" Click="BtnOpenWww_Click"/>
         </StackPanel>
 
-        <!-- 3. Service Cards (4 Card tráº¡ng thÃ¡i chi tiáº¿t, Äá»™ tÆ°Æ¡ng pháº£n cao) -->
+        <!-- 3. Service Cards (4 Card trạng thái chi tiết, Độ tương phản cao) -->
         <Grid Grid.Row="2" Margin="0,0,0,14">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
@@ -406,9 +444,9 @@
             <Border Grid.Column="0" Style="{StaticResource ServiceCard}">
                 <StackPanel>
                     <Grid>
-                        <TextBlock Text="WEB SERVER" FontSize="11" FontWeight="Bold" Foreground="#0369a1" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource Svc_WebServer}" FontSize="11" FontWeight="Bold" Foreground="#0369a1" VerticalAlignment="Center"/>
                         <Border x:Name="BadgeWeb" Background="#f1f5f9" BorderBrush="#cbd5e1" BorderThickness="1" CornerRadius="3" Padding="5,1" HorizontalAlignment="Right">
-                            <TextBlock x:Name="TxtStatusWeb" Text="â—‹ Stopped" FontSize="10" FontWeight="Bold" Foreground="#64748b"/>
+                            <TextBlock x:Name="TxtStatusWeb" Text="{DynamicResource Status_Stopped_Badge}" FontSize="10" FontWeight="Bold" Foreground="#64748b"/>
                         </Border>
                     </Grid>
                     <TextBlock x:Name="TxtWebTitle" Text="Nginx" FontSize="15" FontWeight="Bold" Foreground="#0f172a" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"/>
@@ -420,9 +458,9 @@
             <Border Grid.Column="1" Style="{StaticResource ServiceCard}">
                 <StackPanel>
                     <Grid>
-                        <TextBlock Text="DATABASE" FontSize="11" FontWeight="Bold" Foreground="#0369a1" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource Svc_Database}" FontSize="11" FontWeight="Bold" Foreground="#0369a1" VerticalAlignment="Center"/>
                         <Border x:Name="BadgeDb" Background="#f1f5f9" BorderBrush="#cbd5e1" BorderThickness="1" CornerRadius="3" Padding="5,1" HorizontalAlignment="Right">
-                            <TextBlock x:Name="TxtStatusDb" Text="â—‹ Stopped" FontSize="10" FontWeight="Bold" Foreground="#64748b"/>
+                            <TextBlock x:Name="TxtStatusDb" Text="{DynamicResource Status_Stopped_Badge}" FontSize="10" FontWeight="Bold" Foreground="#64748b"/>
                         </Border>
                     </Grid>
                     <TextBlock x:Name="TxtDbTitle" Text="MySQL / MariaDB" FontSize="15" FontWeight="Bold" Foreground="#0f172a" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"/>
@@ -434,9 +472,9 @@
             <Border Grid.Column="2" Style="{StaticResource ServiceCard}">
                 <StackPanel>
                     <Grid>
-                        <TextBlock Text="PHP FASTCGI" FontSize="11" FontWeight="Bold" Foreground="#0369a1" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource Svc_PhpFastCgi}" FontSize="11" FontWeight="Bold" Foreground="#0369a1" VerticalAlignment="Center"/>
                         <Border x:Name="BadgePhp" Background="#f1f5f9" BorderBrush="#cbd5e1" BorderThickness="1" CornerRadius="3" Padding="5,1" HorizontalAlignment="Right">
-                            <TextBlock x:Name="TxtStatusPhp" Text="â—‹ Stopped" FontSize="10" FontWeight="Bold" Foreground="#64748b"/>
+                            <TextBlock x:Name="TxtStatusPhp" Text="{DynamicResource Status_Stopped_Badge}" FontSize="10" FontWeight="Bold" Foreground="#64748b"/>
                         </Border>
                     </Grid>
                     <TextBlock x:Name="TxtPhpTitle" Text="PHP" FontSize="15" FontWeight="Bold" Foreground="#0f172a" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"/>
@@ -448,9 +486,9 @@
             <Border Grid.Column="3" Style="{StaticResource ServiceCard}" Margin="0">
                 <StackPanel>
                     <Grid>
-                        <TextBlock Text="REDIS CACHE" FontSize="11" FontWeight="Bold" Foreground="#0369a1" VerticalAlignment="Center"/>
+                        <TextBlock Text="{DynamicResource Svc_Redis}" FontSize="11" FontWeight="Bold" Foreground="#0369a1" VerticalAlignment="Center"/>
                         <Border x:Name="BadgeRedis" Background="#f1f5f9" BorderBrush="#cbd5e1" BorderThickness="1" CornerRadius="3" Padding="5,1" HorizontalAlignment="Right">
-                            <TextBlock x:Name="TxtStatusRedis" Text="â—‹ Stopped" FontSize="10" FontWeight="Bold" Foreground="#64748b"/>
+                            <TextBlock x:Name="TxtStatusRedis" Text="{DynamicResource Status_Stopped_Badge}" FontSize="10" FontWeight="Bold" Foreground="#64748b"/>
                         </Border>
                     </Grid>
                     <TextBlock x:Name="TxtRedisTitle" Text="Redis Server" FontSize="15" FontWeight="Bold" Foreground="#0f172a" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"/>
@@ -459,7 +497,7 @@
             </Border>
         </Grid>
 
-        <!-- 4. Content Tabs (Classic Clean Tabs, Ná»•i báº­t chá»¯) -->
+        <!-- 4. Content Tabs (Classic Clean Tabs) -->
         <TabControl Grid.Row="3" Background="#ffffff" BorderBrush="#94a3b8" BorderThickness="1">
             <TabControl.Resources>
                 <Style TargetType="TabItem">
@@ -487,29 +525,29 @@
             </TabControl.Resources>
 
             <!-- Tab 1: Virtual Hosts -->
-            <TabItem Header="Virtual Hosts">
+            <TabItem Header="{DynamicResource Tab_VHosts}">
                 <Grid Margin="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Text="Danh sÃ¡ch cÃ¡c dá»± Ã¡n tá»± nháº­n diá»‡n trong www/ (TLD: .test)"
+                    <TextBlock Text="{DynamicResource Desc_VHosts}"
                                FontSize="12" FontWeight="SemiBold" Foreground="#1e293b" Margin="0,0,0,8"/>
 
                     <ListView x:Name="ListVHosts" Grid.Row="1" Background="#ffffff" Foreground="#0f172a"
                               BorderThickness="1" BorderBrush="#94a3b8">
                         <ListView.View>
                             <GridView>
-                                <GridViewColumn Header="Domain" Width="200" DisplayMemberBinding="{Binding Domain}"/>
-                                <GridViewColumn Header="ThÆ° má»¥c" Width="360" DisplayMemberBinding="{Binding DocumentRoot}"/>
-                                <GridViewColumn Header="Thao tÃ¡c" Width="140">
+                                <GridViewColumn Header="{DynamicResource Col_Domain}" Width="200" DisplayMemberBinding="{Binding Domain}"/>
+                                <GridViewColumn Header="{DynamicResource Col_DocRoot}" Width="360" DisplayMemberBinding="{Binding DocumentRoot}"/>
+                                <GridViewColumn Header="{DynamicResource Col_Actions}" Width="140">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal">
-                                                <Button Content="Má»Ÿ" Style="{StaticResource PrimaryMiniButton}"
+                                                <Button Content="{DynamicResource Btn_OpenWebsite}" Style="{StaticResource PrimaryMiniButton}"
                                                         Click="BtnOpenDomain_Click" Tag="{Binding Domain}" Margin="0,0,6,0"/>
-                                                <Button Content="XÃ³a" Style="{StaticResource DangerMiniButton}"
+                                                <Button Content="{DynamicResource Btn_DeleteProject}" Style="{StaticResource DangerMiniButton}"
                                                         Click="BtnDeleteProject_Click" Tag="{Binding}"/>
                                             </StackPanel>
                                         </DataTemplate>
@@ -522,44 +560,43 @@
             </TabItem>
 
             <!-- Tab 2: Quick Apps (Tạo dự án 1-Click chuẩn Novagon) -->
-            <TabItem Header="Táº¡o dá»± Ã¡n (Quick App)">
+            <TabItem Header="{DynamicResource Tab_QuickApp}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <Grid Margin="14">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <!-- Header hÆ°á»›ng dáº«n & Cáº¥u hÃ¬nh dá»± Ã¡n -->
+                        <!-- Header hướng dẫn & Cấu hình dự án -->
                         <Border Grid.Row="0" Background="#ffffff" BorderBrush="#cbd5e1" BorderThickness="1" CornerRadius="6" Padding="14,12" Margin="0,0,0,12">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,10">
-                                    <TextBlock Text="TÃªn thÆ° má»¥c dá»± Ã¡n:" VerticalAlignment="Center" FontWeight="Bold" Foreground="#0f172a" Margin="0,0,8,0"/>
+                                    <TextBlock Text="{DynamicResource Lbl_ProjectName}" VerticalAlignment="Center" FontWeight="Bold" Foreground="#0f172a" Margin="0,0,8,0"/>
                                     <TextBox x:Name="TxtQuickAppName" Width="220" Padding="8,4" FontSize="13" Text="my-project"
                                              BorderBrush="#94a3b8" Foreground="#0f172a" FontWeight="Bold"/>
                                     <TextBlock Text=".test" VerticalAlignment="Center" FontWeight="Bold" Foreground="#0284c7" Margin="6,0,16,0"/>
 
                                     <Border Background="#e0f2fe" BorderBrush="#7dd3fc" BorderThickness="1" CornerRadius="4" Padding="8,3" VerticalAlignment="Center">
-                                        <TextBlock Text="Virtual Host tá»± Ä‘á»™ng kÃ­ch hoáº¡t ngay sau khi táº¡o" FontSize="11" FontWeight="SemiBold" Foreground="#0369a1"/>
+                                        <TextBlock Text="{DynamicResource Hint_VHostAuto}" FontSize="11" FontWeight="SemiBold" Foreground="#0369a1"/>
                                     </Border>
                                 </StackPanel>
 
-                                <!-- TÃ¹y chá»n cáº¥u hÃ¬nh -->
+                                <!-- Tùy chọn cấu hình -->
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <TextBlock Text="TÃ¹y chá»n cáº¥u hÃ¬nh:" FontWeight="Bold" FontSize="11" Foreground="#475569" Margin="0,0,12,0" VerticalAlignment="Center"/>
-                                    <CheckBox x:Name="ChkCreateDb" Content="Tá»± Ä‘á»™ng táº¡o Database MySQL" IsChecked="True"
+                                    <TextBlock Text="{DynamicResource Lbl_ConfigOptions}" FontWeight="Bold" FontSize="11" Foreground="#475569" Margin="0,0,12,0" VerticalAlignment="Center"/>
+                                    <CheckBox x:Name="ChkCreateDb" Content="{DynamicResource Chk_AutoCreateDb}" IsChecked="True"
                                               VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#0f172a" Margin="0,0,16,0"/>
-                                    <CheckBox x:Name="ChkOpenBrowser" Content="Má»Ÿ trÃ¬nh duyá»‡t sau khi táº¡o" IsChecked="True"
+                                    <CheckBox x:Name="ChkOpenBrowser" Content="{DynamicResource Chk_OpenBrowser}" IsChecked="True"
                                               VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#0f172a" Margin="0,0,16,0"/>
-                                    <CheckBox x:Name="ChkOpenFolder" Content="Má»Ÿ thÆ° má»¥c trong Explorer" IsChecked="False"
+                                    <CheckBox x:Name="ChkOpenFolder" Content="{DynamicResource Chk_OpenExplorer}" IsChecked="False"
                                               VerticalAlignment="Center" FontWeight="SemiBold" Foreground="#0f172a"/>
                                 </StackPanel>
                             </StackPanel>
                         </Border>
 
-                        <!-- 4 Cards: Frameworks & Apps (Grid 2 cá»™t x 2 hÃ ng) -->
+                        <!-- 4 Cards: Frameworks & Apps (Grid 2 cột x 2 hàng) -->
                         <Grid Grid.Row="1">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
@@ -574,14 +611,14 @@
                             <Border Grid.Row="0" Grid.Column="0" Background="#ffffff" BorderBrush="#cbd5e1" BorderThickness="1" CornerRadius="6" Padding="14" Margin="0,0,6,10">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,6">
-                                        <TextBlock Text="WordPress" FontSize="16" FontWeight="Bold" Foreground="#0284c7"/>
+                                        <TextBlock Text="{DynamicResource Card_Wp_Title}" FontSize="16" FontWeight="Bold" Foreground="#0284c7"/>
                                         <Border Background="#e0f2fe" CornerRadius="3" Padding="5,1" Margin="8,0,0,0">
-                                            <TextBlock Text="CMS v6.x" FontSize="11" FontWeight="Bold" Foreground="#0369a1"/>
+                                            <TextBlock Text="{DynamicResource Card_Wp_Badge}" FontSize="11" FontWeight="Bold" Foreground="#0369a1"/>
                                         </Border>
                                     </StackPanel>
-                                    <TextBlock Text="Tá»± Ä‘á»™ng táº£i WordPress má»›i nháº¥t tá»« wordpress.org, sinh wp-config.php chuáº©n hÃ³a (Salts báº£o máº­t, Direct FS, 256M RAM), táº¡o sáºµn Database MySQL vÃ  VHost."
+                                    <TextBlock Text="{DynamicResource Card_Wp_Desc}"
                                                TextWrapping="Wrap" FontSize="12" Foreground="#475569" Margin="0,0,0,12" Height="50"/>
-                                    <Button Content="âš¡ Táº¡o WordPress 1-Click" Style="{StaticResource PrimaryMiniButton}"
+                                    <Button Content="{DynamicResource Btn_CreateWp}" Style="{StaticResource PrimaryMiniButton}"
                                             Padding="14,7" HorizontalAlignment="Left" Click="BtnCreateWordPress_Click"/>
                                 </StackPanel>
                             </Border>
@@ -590,14 +627,14 @@
                             <Border Grid.Row="0" Grid.Column="1" Background="#ffffff" BorderBrush="#cbd5e1" BorderThickness="1" CornerRadius="6" Padding="14" Margin="6,0,0,10">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,6">
-                                        <TextBlock Text="Laravel" FontSize="16" FontWeight="Bold" Foreground="#ef4444"/>
+                                        <TextBlock Text="{DynamicResource Card_Laravel_Title}" FontSize="16" FontWeight="Bold" Foreground="#ef4444"/>
                                         <Border Background="#fee2e2" CornerRadius="3" Padding="5,1" Margin="8,0,0,0">
-                                            <TextBlock Text="Framework v11.x" FontSize="11" FontWeight="Bold" Foreground="#b91c1c"/>
+                                            <TextBlock Text="{DynamicResource Card_Laravel_Badge}" FontSize="11" FontWeight="Bold" Foreground="#b91c1c"/>
                                         </Border>
                                     </StackPanel>
-                                    <TextBlock Text="CÃ i Ä‘áº·t dá»± Ã¡n Laravel chuáº©n 100% báº±ng Composer (Ä‘áº§y Ä‘á»§ Framework, Artisan CLI, Vendor packages), tá»± cáº¥u hÃ¬nh .env káº¿t ná»‘i MySQL vÃ  trá» VHost vÃ o public/."
+                                    <TextBlock Text="{DynamicResource Card_Laravel_Desc}"
                                                TextWrapping="Wrap" FontSize="12" Foreground="#475569" Margin="0,0,0,12" Height="50"/>
-                                    <Button Content="âš¡ Táº¡o Laravel (Composer)" Style="{StaticResource DangerMiniButton}"
+                                    <Button Content="{DynamicResource Btn_CreateLaravel}" Style="{StaticResource DangerMiniButton}"
                                             Padding="14,7" HorizontalAlignment="Left" Click="BtnCreateLaravel_Click"/>
                                 </StackPanel>
                             </Border>
@@ -606,14 +643,14 @@
                             <Border Grid.Row="1" Grid.Column="0" Background="#ffffff" BorderBrush="#cbd5e1" BorderThickness="1" CornerRadius="6" Padding="14" Margin="0,0,6,0">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,6">
-                                        <TextBlock Text="PHP Project (Trá»‘ng)" FontSize="16" FontWeight="Bold" Foreground="#16a34a"/>
+                                        <TextBlock Text="{DynamicResource Card_Php_Title}" FontSize="16" FontWeight="Bold" Foreground="#16a34a"/>
                                         <Border Background="#dcfce7" CornerRadius="3" Padding="5,1" Margin="8,0,0,0">
-                                            <TextBlock Text="PHP 8.x Starter" FontSize="11" FontWeight="Bold" Foreground="#15803d"/>
+                                            <TextBlock Text="{DynamicResource Card_Php_Badge}" FontSize="11" FontWeight="Bold" Foreground="#15803d"/>
                                         </Border>
                                     </StackPanel>
-                                    <TextBlock Text="Khá»Ÿi táº¡o thÆ° má»¥c dá»± Ã¡n PHP thuáº§n kÃ¨m trang kiá»ƒm tra káº¿t ná»‘i Database MySQL (PDO), phiÃªn báº£n PHP, cáº¥u hÃ¬nh Web Server vÃ  link xem PHP Info nhanh."
+                                    <TextBlock Text="{DynamicResource Card_Php_Desc}"
                                                TextWrapping="Wrap" FontSize="12" Foreground="#475569" Margin="0,0,0,12" Height="50"/>
-                                    <Button Content="âš¡ Táº¡o Blank PHP" Style="{StaticResource SuccessMiniButton}"
+                                    <Button Content="{DynamicResource Btn_CreatePhp}" Style="{StaticResource SuccessMiniButton}"
                                             Padding="14,7" HorizontalAlignment="Left" Click="BtnCreateBlankPhp_Click"/>
                                 </StackPanel>
                             </Border>
@@ -622,22 +659,22 @@
                             <Border Grid.Row="1" Grid.Column="1" Background="#ffffff" BorderBrush="#cbd5e1" BorderThickness="1" CornerRadius="6" Padding="14" Margin="6,0,0,0">
                                 <StackPanel>
                                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,0,6">
-                                        <TextBlock Text="Static Web (HTML5)" FontSize="16" FontWeight="Bold" Foreground="#6366f1"/>
+                                        <TextBlock Text="{DynamicResource Card_Static_Title}" FontSize="16" FontWeight="Bold" Foreground="#6366f1"/>
                                         <Border Background="#ede9fe" CornerRadius="3" Padding="5,1" Margin="8,0,0,0">
-                                            <TextBlock Text="Frontend Template" FontSize="11" FontWeight="Bold" Foreground="#6d28d9"/>
+                                            <TextBlock Text="{DynamicResource Card_Static_Badge}" FontSize="11" FontWeight="Bold" Foreground="#6d28d9"/>
                                         </Border>
                                     </StackPanel>
-                                    <TextBlock Text="Dá»± Ã¡n web tÄ©nh cáº¥u trÃºc chuáº©n gá»“m index.html, style.css vÃ  app.js phong cÃ¡ch giao diá»‡n hiá»‡n Ä‘áº¡i, responsive, sáºµn sÃ ng phÃ¡t triá»ƒn Landing Page hoáº·c Web UI."
+                                    <TextBlock Text="{DynamicResource Card_Static_Desc}"
                                                TextWrapping="Wrap" FontSize="12" Foreground="#475569" Margin="0,0,0,12" Height="50"/>
-                                    <Button Content="âš¡ Táº¡o Static Web" Style="{StaticResource PurpleMiniButton}"
+                                    <Button Content="{DynamicResource Btn_CreateStatic}" Style="{StaticResource PurpleMiniButton}"
                                             Padding="14,7" HorizontalAlignment="Left" Click="BtnCreateStaticWeb_Click"/>
                                 </StackPanel>
                             </Border>
                         </Grid>
 
-                        <!-- Tiáº¿n trÃ¬nh -->
+                        <!-- Tiến trình -->
                         <StackPanel Grid.Row="2" x:Name="PnlQuickAppProgress" Visibility="Collapsed" Margin="0,14,0,0">
-                            <TextBlock x:Name="TxtQuickAppStatus" Text="Äang xá»­ lÃ½ khá»Ÿi táº¡o dá»± Ã¡n..." FontSize="12" FontWeight="Bold" Foreground="#0369a1" Margin="0,0,0,6"/>
+                            <TextBlock x:Name="TxtQuickAppStatus" Text="{DynamicResource Msg_Processing}" FontSize="12" FontWeight="Bold" Foreground="#0369a1" Margin="0,0,0,6"/>
                             <ProgressBar x:Name="PbQuickApp" Height="8" Background="#e2e8f0" Foreground="#16a34a" BorderThickness="0"/>
                         </StackPanel>
                     </Grid>
@@ -645,18 +682,18 @@
             </TabItem>
 
             <!-- Tab 3: Runtime Configuration & Extensions -->
-            <TabItem Header="Cáº¥u hÃ¬nh Runtimes">
+            <TabItem Header="{DynamicResource Tab_Runtimes}">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Margin="16">
-                        <TextBlock Text="Lá»±a chá»n phiÃªn báº£n PHP:" FontSize="13" FontWeight="Bold" Foreground="#0f172a" Margin="0,0,0,6"/>
+                        <TextBlock Text="{DynamicResource Lbl_SelectPhp}" FontSize="13" FontWeight="Bold" Foreground="#0f172a" Margin="0,0,0,6"/>
                         <ComboBox x:Name="CmbPhpVersions" Width="320" HorizontalAlignment="Left" Margin="0,0,0,14"
                                   FontSize="13" Foreground="#0f172a" SelectionChanged="CmbPhpVersions_SelectionChanged"/>
 
-                        <TextBlock Text="Lá»±a chá»n phiÃªn báº£n MySQL / MariaDB:" FontSize="13" FontWeight="Bold" Foreground="#0f172a" Margin="0,0,0,6"/>
+                        <TextBlock Text="{DynamicResource Lbl_SelectDb}" FontSize="13" FontWeight="Bold" Foreground="#0f172a" Margin="0,0,0,6"/>
                         <ComboBox x:Name="CmbMySqlVersions" Width="320" HorizontalAlignment="Left" Margin="0,0,0,14"
                                   FontSize="13" Foreground="#0f172a" SelectionChanged="CmbMySqlVersions_SelectionChanged"/>
 
-                        <TextBlock Text="Web Server:" FontSize="13" FontWeight="Bold" Foreground="#0f172a" Margin="0,0,0,6"/>
+                        <TextBlock Text="{DynamicResource Lbl_WebEngine}" FontSize="13" FontWeight="Bold" Foreground="#0f172a" Margin="0,0,0,6"/>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,16">
                             <RadioButton x:Name="RbNginx" Content="Nginx" IsChecked="True" FontSize="13" FontWeight="SemiBold" Foreground="#0f172a" Margin="0,0,16,0"/>
                             <RadioButton x:Name="RbApache" Content="Apache" FontSize="13" FontWeight="SemiBold" Foreground="#0f172a"/>
@@ -665,7 +702,7 @@
                         <!-- PHP Extension Manager (Bật/tắt extension 1-click chuẩn Novagon) -->
                         <Border Background="#f8fafc" BorderBrush="#94a3b8" BorderThickness="1" CornerRadius="6" Padding="14">
                             <StackPanel>
-                                <TextBlock Text="Quáº£n lÃ½ PHP Extensions (Click báº­t/táº¯t trong php.ini):"
+                                <TextBlock Text="{DynamicResource Lbl_PhpExtTitle}"
                                            FontSize="13" FontWeight="Bold" Foreground="#0369a1" Margin="0,0,0,10"/>
                                 <ItemsControl x:Name="ListPhpExtensions">
                                     <ItemsControl.ItemsPanel>
@@ -688,8 +725,8 @@
                 </ScrollViewer>
             </TabItem>
 
-            <!-- Tab 4: Package Hub (Kho GÃ³i Runtimes 1-Click) -->
-            <TabItem Header="Kho Runtimes (Hub)">
+            <!-- Tab 4: Package Hub (Kho Gói Runtimes 1-Click) -->
+            <TabItem Header="{DynamicResource Tab_Hub}">
                 <Grid Margin="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -697,17 +734,17 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Text="Táº£i vÃ  cÃ i Ä‘áº·t tá»± Ä‘á»™ng cÃ¡c phiÃªn báº£n PHP, MySQL, Redis (1-Click, khÃ´ng cáº§n tá»± cáº¥u hÃ¬nh zip):"
+                    <TextBlock Text="{DynamicResource Lbl_HubTitle}"
                                FontSize="12" FontWeight="SemiBold" Foreground="#1e293b" Margin="0,0,0,8"/>
 
                     <ListView x:Name="ListPackages" Grid.Row="1" Background="#ffffff" Foreground="#0f172a"
                               BorderThickness="1" BorderBrush="#94a3b8">
                         <ListView.View>
                             <GridView>
-                                <GridViewColumn Header="GÃ³i Runtime" Width="310" DisplayMemberBinding="{Binding DisplayName}"/>
-                                <GridViewColumn Header="Danh má»¥c" Width="80" DisplayMemberBinding="{Binding Category}"/>
-                                <GridViewColumn Header="Dung lÆ°á»£ng" Width="90" DisplayMemberBinding="{Binding SizeDescription}"/>
-                                <GridViewColumn Header="Thao tÃ¡c" Width="130">
+                                <GridViewColumn Header="{DynamicResource Col_PkgName}" Width="310" DisplayMemberBinding="{Binding DisplayName}"/>
+                                <GridViewColumn Header="{DynamicResource Col_PkgCat}" Width="80" DisplayMemberBinding="{Binding Category}"/>
+                                <GridViewColumn Header="{DynamicResource Col_PkgSize}" Width="90" DisplayMemberBinding="{Binding SizeDescription}"/>
+                                <GridViewColumn Header="{DynamicResource Col_Actions}" Width="130">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <Button Content="{Binding ActionText}" IsEnabled="{Binding CanInstall}"
@@ -721,14 +758,14 @@
                     </ListView>
 
                     <StackPanel Grid.Row="2" x:Name="PnlDownloadProgress" Visibility="Collapsed" Margin="0,10,0,0">
-                        <TextBlock x:Name="TxtDownloadStatus" Text="Äang xá»­ lÃ½..." FontSize="12" FontWeight="Bold" Foreground="#0369a1" Margin="0,0,0,4"/>
+                        <TextBlock x:Name="TxtDownloadStatus" Text="{DynamicResource Msg_Processing}" FontSize="12" FontWeight="Bold" Foreground="#0369a1" Margin="0,0,0,4"/>
                         <ProgressBar x:Name="PbDownload" Height="8" Background="#e2e8f0" Foreground="#0284c7" BorderThickness="0"/>
                     </StackPanel>
                 </Grid>
             </TabItem>
 
             <!-- Tab 5: Logs -->
-            <TabItem Header="Nháº­t kÃ½ (Logs)">
+            <TabItem Header="{DynamicResource Tab_Logs}">
                 <Grid Margin="12">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="*"/>
@@ -740,11 +777,10 @@
                              VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" BorderBrush="#94a3b8"
                              Padding="8"/>
 
-                    <Button Grid.Row="1" Content="XÃ³a Logs" HorizontalAlignment="Right" Margin="0,8,0,0"
+                    <Button Grid.Row="1" Content="{DynamicResource Btn_ClearLogs}" HorizontalAlignment="Right" Margin="0,8,0,0"
                             Style="{StaticResource ActionButton}" Click="BtnClearLogs_Click"/>
                 </Grid>
             </TabItem>
         </TabControl>
     </Grid>
 </Window>
-

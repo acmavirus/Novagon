@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Novagon.Core.Hosts;
@@ -17,7 +17,7 @@ public class ServiceManager : IDisposable
 
     public RuntimePackage? ActivePhp { get; set; }
     public RuntimePackage? ActiveMySql { get; set; }
-    public string ActiveWebServer { get; set; } = "nginx"; // "nginx" hoáº·c "apache"
+    public string ActiveWebServer { get; set; } = "nginx"; // "nginx" hoặc "apache"
 
     private ProcessRunner? _webRunner;
     private ProcessRunner? _phpRunner;
@@ -42,7 +42,7 @@ public class ServiceManager : IDisposable
         Scanner = new RuntimeScanner(Path.Combine(root, "bin"));
         VHostGen = new VHostGenerator(Path.Combine(root, "www"));
 
-        // Tá»± Ä‘á»™ng nháº­n diá»‡n phiÃªn báº£n runtime kháº£ dá»¥ng Ä‘áº§u tiÃªn
+        // Tự động nhận diện phiên bản runtime khả dụng đầu tiên
         var phps = Scanner.GetInstalledPackages("php");
         if (phps.Count > 0) ActivePhp = phps[0];
 
@@ -52,9 +52,9 @@ public class ServiceManager : IDisposable
 
     public (bool Success, string Message) StartAll()
     {
-        Log("System", "Báº¯t Ä‘áº§u khá»Ÿi Ä‘á»™ng cÃ¡c dá»‹ch vá»¥...");
+        Log("System", "Bắt đầu khởi động các dịch vụ...");
 
-        // Náº¡p láº¡i cÃ¡c package náº¿u má»›i Ä‘Æ°á»£c táº£i vÃ o bin/
+        // Nạp lại các package nếu mới được tải vào bin/
         if (ActivePhp == null)
         {
             var phps = Scanner.GetInstalledPackages("php");
@@ -66,39 +66,37 @@ public class ServiceManager : IDisposable
             if (mysqls.Count > 0) ActiveMySql = mysqls[0];
         }
 
-        // 1. Kiá»ƒm tra xung Ä‘á»™t cá»•ng
+        // 1. Kiểm tra xung đột cổng
         if (PortChecker.IsPortInUse(80))
         {
-            Log("System", "Cáº£nh bÃ¡o: Cá»•ng 80 Ä‘ang bá»‹ á»©ng dá»¥ng khÃ¡c chiáº¿m giá»¯ (kiá»ƒm tra IIS, Skype, v.v.)");
+            Log("System", "Cảnh báo: Cổng 80 đang bị ứng dụng khác chiếm giữ (kiểm tra IIS, Skype, v.v.)");
         }
         if (PortChecker.IsPortInUse(3306))
         {
-            Log("System", "Cáº£nh bÃ¡o: Cá»•ng 3306 (MySQL) Ä‘ang bá»‹ á»©ng dá»¥ng khÃ¡c chiáº¿m giá»¯.");
+            Log("System", "Cảnh báo: Cổng 3306 (MySQL) đang bị ứng dụng khác chiếm giữ.");
         }
 
-        // 2. Äáº£m báº£o chá»©ng chá»‰ SSL cá»¥c bá»™ sáºµn sÃ ng
+        // 2. Đảm bảo chứng chỉ SSL cục bộ sẵn sàng
         LocalSslManager.EnsureCertificatesInstalled(installToWindowsTrustStore: true);
 
-        // 3. Tá»± sinh Virtual Hosts vÃ  cáº­p nháº­t file hosts
+        // 3. Tự sinh Virtual Hosts và cập nhật file hosts
         try
         {
             if (!HostsFileManager.CanWriteHostsFile())
             {
-                Log("VHost", "LÆ°u Ã½: á»¨ng dá»¥ng Ä‘ang cháº¡y quyá»n User thÆ°á»ng. Cáº§n quyá»n Administrator Ä‘á»ƒ tá»± Ä‘á»™ng sá»­a file hosts.");
+                Log("VHost", "Lưu ý: Ứng dụng đang chạy quyền User thường. Cần quyền Administrator để tự động sửa file hosts.");
             }
             VHostGen.GenerateAll(LocalSslManager.CertPath, LocalSslManager.KeyPath, phpFastCgiPort: 9000);
-            Log("VHost", "ÄÃ£ quÃ©t vÃ  Ä‘á»“ng bá»™ cÃ¡c Virtual Hosts.");
+            Log("VHost", "Đã quét và đồng bộ các Virtual Hosts.");
         }
         catch (Exception ex)
         {
-            Log("VHost", $"Lá»—i táº¡o Virtual Hosts: {ex.Message}");
+            Log("VHost", $"Lỗi tạo Virtual Hosts: {ex.Message}");
         }
 
-        // 4. Khá»Ÿi Ä‘á»™ng PHP FastCGI (náº¿u cÃ³ runtime)
-        // Äáº£m báº£o thÆ° má»¥c logs tá»“n táº¡i
+        // 4. Khởi động PHP FastCGI (nếu có runtime)
         Directory.CreateDirectory(Path.Combine(AppDirectoryHelper.AppRoot, "logs"));
 
-        // 4. Khá»Ÿi Ä‘á»™ng PHP FastCGI (náº¿u cÃ³ runtime)
         if (ActivePhp != null && File.Exists(ActivePhp.ExecutablePath))
         {
             string phpIni = Path.Combine(ActivePhp.RootPath, "php.ini");
@@ -110,14 +108,14 @@ public class ServiceManager : IDisposable
             _phpRunner.ErrorDataReceived += msg => Log("PHP", msg);
             _phpRunner.StatusChanged += _ => OnStateChanged?.Invoke();
             _phpRunner.Start();
-            Log("PHP", $"Khá»Ÿi Ä‘á»™ng {ActivePhp.Name} trÃªn cá»•ng 9000.");
+            Log("PHP", $"Khởi động {ActivePhp.Name} trên cổng 9000.");
         }
         else
         {
-            Log("PHP", "KhÃ´ng tÃ¬m tháº¥y phiÃªn báº£n PHP nÃ o trong bin/php.");
+            Log("PHP", "Không tìm thấy phiên bản PHP nào trong bin/php.");
         }
 
-        // 5. Khá»Ÿi Ä‘á»™ng Web Server (Nginx)
+        // 5. Khởi động Web Server (Nginx)
         var nginxPackages = Scanner.GetInstalledPackages("nginx");
         if (nginxPackages.Count > 0)
         {
@@ -130,25 +128,25 @@ public class ServiceManager : IDisposable
             _webRunner.ErrorDataReceived += msg => Log("Nginx", msg);
             _webRunner.StatusChanged += _ => OnStateChanged?.Invoke();
             _webRunner.Start();
-            Log("Nginx", $"Khá»Ÿi Ä‘á»™ng {nginx.Name}.");
+            Log("Nginx", $"Khởi động {nginx.Name}.");
         }
         else
         {
-            Log("Nginx", "KhÃ´ng tÃ¬m tháº¥y Nginx trong bin/nginx.");
+            Log("Nginx", "Không tìm thấy Nginx trong bin/nginx.");
         }
 
-        // 6. Khá»Ÿi Ä‘á»™ng MySQL / MariaDB (náº¿u cÃ³)
+        // 6. Khởi động MySQL / MariaDB (nếu có)
         if (ActiveMySql != null && File.Exists(ActiveMySql.ExecutablePath))
         {
             string myIni = Path.Combine(ActiveMySql.RootPath, "my.ini");
             string dataDir = Path.Combine(ActiveMySql.RootPath, "data");
             string normData = dataDir.Replace('\\', '/');
 
-            // Tá»± Ä‘á»™ng khá»Ÿi táº¡o database há»‡ thá»‘ng náº¿u thÆ° má»¥c data/mysql chÆ°a tá»“n táº¡i
+            // Tự động khởi tạo database hệ thống nếu thư mục data/mysql chưa tồn tại
             string mysqlSystemDir = Path.Combine(dataDir, "mysql");
             if (!Directory.Exists(mysqlSystemDir))
             {
-                Log("MySQL", "ChÆ°a phÃ¡t hiá»‡n database há»‡ thá»‘ng, Ä‘ang tá»± Ä‘á»™ng khá»Ÿi táº¡o (bootstrap)...");
+                Log("MySQL", "Chưa phát hiện database hệ thống, đang tự động khởi tạo (bootstrap)...");
                 Directory.CreateDirectory(dataDir);
 
                 string binDir = Path.GetDirectoryName(ActiveMySql.ExecutablePath) ?? ActiveMySql.RootPath;
@@ -172,11 +170,11 @@ public class ServiceManager : IDisposable
                         };
                         using var initProc = System.Diagnostics.Process.Start(initPsi);
                         initProc?.WaitForExit(30000);
-                        Log("MySQL", "Khá»Ÿi táº¡o database há»‡ thá»‘ng thÃ nh cÃ´ng.");
+                        Log("MySQL", "Khởi tạo database hệ thống thành công.");
                     }
                     catch (Exception ex)
                     {
-                        Log("MySQL", $"Lá»—i khi khá»Ÿi táº¡o database: {ex.Message}");
+                        Log("MySQL", $"Lỗi khi khởi tạo database: {ex.Message}");
                     }
                 }
             }
@@ -195,7 +193,7 @@ max_allowed_packet=64M
                 try { File.WriteAllText(myIni, defaultIni); } catch { }
             }
 
-            // LÆ°u Ã½: Äá»‘i vá»›i MySQL/MariaDB, --defaults-file Báº®T BUá»˜C pháº£i lÃ  tham sá»‘ Ä‘áº§u tiÃªn
+            // Lưu ý: Đối với MySQL/MariaDB, --defaults-file BẮT BUỘC phải là tham số đầu tiên
             string myArgs = File.Exists(myIni)
                 ? $"--defaults-file=\"{myIni}\" --standalone --console"
                 : "--standalone --console";
@@ -205,10 +203,10 @@ max_allowed_packet=64M
             _mysqlRunner.ErrorDataReceived += msg => Log("MySQL", msg);
             _mysqlRunner.StatusChanged += _ => OnStateChanged?.Invoke();
             _mysqlRunner.Start();
-            Log("MySQL", $"Khá»Ÿi Ä‘á»™ng {ActiveMySql.Name} trÃªn cá»•ng 3306.");
+            Log("MySQL", $"Khởi động {ActiveMySql.Name} trên cổng 3306.");
         }
 
-        // 7. Khá»Ÿi Ä‘á»™ng Redis (náº¿u cÃ³ trong bin/redis)
+        // 7. Khởi động Redis (nếu có trong bin/redis)
         var redisPackages = Scanner.GetInstalledPackages("redis");
         if (redisPackages.Count > 0 && File.Exists(redisPackages[0].ExecutablePath))
         {
@@ -221,11 +219,11 @@ max_allowed_packet=64M
             _redisRunner.ErrorDataReceived += msg => Log("Redis", msg);
             _redisRunner.StatusChanged += _ => OnStateChanged?.Invoke();
             _redisRunner.Start();
-            Log("Redis", $"Khá»Ÿi Ä‘á»™ng {ActiveRedis.Name} trÃªn cá»•ng 6379.");
+            Log("Redis", $"Khởi động {ActiveRedis.Name} trên cổng 6379.");
         }
 
         OnStateChanged?.Invoke();
-        return (true, "ÄÃ£ khá»Ÿi Ä‘á»™ng cÃ¡c dá»‹ch vá»¥ hoÃ n táº¥t.");
+        return (true, "Đã khởi động các dịch vụ hoàn tất.");
     }
 
     private bool _isStopping;
@@ -237,9 +235,9 @@ max_allowed_packet=64M
 
         try
         {
-            Log("System", "Äang dá»«ng toÃ n bá»™ dá»‹ch vá»¥...");
+            Log("System", "Đang dừng toàn bộ dịch vụ...");
 
-            // 1. Dá»«ng Nginx má»™t cÃ¡ch lá»‹ch sá»± trÆ°á»›c
+            // 1. Dừng Nginx một cách lịch sự trước
             var nginxPackages = Scanner.GetInstalledPackages("nginx");
             if (nginxPackages.Count > 0 && File.Exists(nginxPackages[0].ExecutablePath))
             {
@@ -259,7 +257,7 @@ max_allowed_packet=64M
                 catch { }
             }
 
-            // 2. Dá»«ng cÃ¡c ProcessRunner
+            // 2. Dừng các ProcessRunner
             _webRunner?.Stop();
             _phpRunner?.Stop();
             _mysqlRunner?.Stop();
@@ -275,7 +273,7 @@ max_allowed_packet=64M
             _mysqlRunner = null;
             _redisRunner = null;
 
-            Log("System", "ToÃ n bá»™ dá»‹ch vá»¥ Ä‘Ã£ dá»«ng.");
+            Log("System", "Toàn bộ dịch vụ đã dừng.");
             try
             {
                 OnStateChanged?.Invoke();
@@ -290,10 +288,10 @@ max_allowed_packet=64M
 
     public void ReloadVHosts()
     {
-        Log("VHost", "Äang táº£i láº¡i cáº¥u hÃ¬nh Virtual Hosts...");
+        Log("VHost", "Đang tải lại cấu hình Virtual Hosts...");
         VHostGen.GenerateAll(LocalSslManager.CertPath, LocalSslManager.KeyPath, phpFastCgiPort: 9000);
 
-        // Gá»­i lá»‡nh reload cho Nginx náº¿u Ä‘ang cháº¡y
+        // Gửi lệnh reload cho Nginx nếu đang chạy
         var nginxPackages = Scanner.GetInstalledPackages("nginx");
         if (nginxPackages.Count > 0 && _webRunner?.Status == ProcessStatus.Running)
         {
@@ -313,7 +311,7 @@ max_allowed_packet=64M
             catch { }
         }
 
-        Log("VHost", "Táº£i láº¡i Virtual Hosts hoÃ n táº¥t.");
+        Log("VHost", "Tải lại Virtual Hosts hoàn tất.");
     }
 
     private void Log(string source, string message)
@@ -327,4 +325,3 @@ max_allowed_packet=64M
         GC.SuppressFinalize(this);
     }
 }
-

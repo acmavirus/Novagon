@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -12,6 +13,7 @@ using Novagon.Core.QuickApps;
 using Novagon.Core.Runtimes;
 using Novagon.Core.Services;
 using Novagon.Core.VHost;
+using Novagon.UI.Localization;
 
 namespace Novagon.UI;
 
@@ -31,6 +33,8 @@ public partial class MainWindow : Window
         _quickAppManager = new QuickAppManager();
         _serviceManager.OnLogReceived += OnLogReceived;
         _serviceManager.OnStateChanged += OnStateChanged;
+
+        LocalizationManager.LanguageChanged += OnLanguageChanged;
 
         if (!IsAdministrator())
         {
@@ -69,8 +73,37 @@ public partial class MainWindow : Window
         }
         catch
         {
-            // NgÆ°á»i dÃ¹ng chá»n No/Há»§y trÃªn há»™p thoáº¡i UAC
+            // Người dùng chọn No/Hủy trên hộp thoại UAC
         }
+    }
+
+    private void BtnSettings_Click(object sender, RoutedEventArgs e)
+    {
+        OpenSettingsDialog();
+    }
+
+    private void MenuSettings_Click(object sender, RoutedEventArgs e)
+    {
+        ShowWindow();
+        OpenSettingsDialog();
+    }
+
+    private void OpenSettingsDialog()
+    {
+        var dlg = new SettingsWindow { Owner = this };
+        dlg.ShowDialog();
+    }
+
+    private void OnLanguageChanged()
+    {
+        if (_isExiting) return;
+        Dispatcher.BeginInvoke(() =>
+        {
+            UpdateUIState();
+            LoadRuntimes();
+            LoadExtensions();
+            RefreshPackageList();
+        });
     }
 
     private void LoadRuntimes()
@@ -85,7 +118,7 @@ public partial class MainWindow : Window
         }
         else
         {
-            TxtPhpTitle.Text = "ChÆ°a cÃ i Ä‘áº·t";
+            TxtPhpTitle.Text = LocalizationManager.GetString("Status_NotInstalled", "Chưa cài đặt");
         }
 
         var mysqls = _serviceManager.Scanner.GetInstalledPackages("mysql");
@@ -98,7 +131,7 @@ public partial class MainWindow : Window
         }
         else
         {
-            TxtDbTitle.Text = "ChÆ°a cÃ i Ä‘áº·t";
+            TxtDbTitle.Text = LocalizationManager.GetString("Status_NotInstalled", "Chưa cài đặt");
         }
 
         var redises = _serviceManager.Scanner.GetInstalledPackages("redis");
@@ -108,7 +141,7 @@ public partial class MainWindow : Window
         }
         else
         {
-            TxtRedisTitle.Text = "ChÆ°a cÃ i Ä‘áº·t (Hub)";
+            TxtRedisTitle.Text = LocalizationManager.GetString("Status_NotInstalled_Hub", "Chưa cài đặt (Hub)");
         }
     }
 
@@ -135,15 +168,15 @@ public partial class MainWindow : Window
         if (isRunning)
         {
             StatusDot.Fill = new SolidColorBrush(Color.FromRgb(34, 197, 94)); // Emerald / Green
-            TxtStatus.Text = "Running (Online)";
+            TxtStatus.Text = LocalizationManager.GetString("Overall_Online", "Running (Online)");
         }
         else
         {
             StatusDot.Fill = new SolidColorBrush(Color.FromRgb(239, 68, 68)); // Red
-            TxtStatus.Text = "Start All (Stopped)";
+            TxtStatus.Text = LocalizationManager.GetString("Overall_Stopped", "Start All (Stopped)");
         }
 
-        // Cáº­p nháº­t tráº¡ng thÃ¡i chi tiáº¿t tá»«ng Service
+        // Cập nhật trạng thái chi tiết từng Service
         bool hasNginx = _serviceManager.Scanner.GetInstalledPackages("nginx").Count > 0;
         bool hasDb = _serviceManager.ActiveMySql != null;
         bool hasPhp = _serviceManager.ActivePhp != null;
@@ -162,7 +195,7 @@ public partial class MainWindow : Window
             badge.Background = new SolidColorBrush(Color.FromRgb(241, 245, 249)); // #f1f5f9
             badge.BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)); // #cbd5e1
             txt.Foreground = new SolidColorBrush(Color.FromRgb(148, 163, 184)); // #94a3b8
-            txt.Text = "â—‹ ChÆ°a cÃ i";
+            txt.Text = LocalizationManager.GetString("Status_NotInstalled_Short", "○ Chưa cài");
             return;
         }
 
@@ -172,25 +205,25 @@ public partial class MainWindow : Window
                 badge.Background = new SolidColorBrush(Color.FromRgb(220, 252, 231)); // #dcfce7
                 badge.BorderBrush = new SolidColorBrush(Color.FromRgb(134, 239, 172)); // #86efac
                 txt.Foreground = new SolidColorBrush(Color.FromRgb(21, 128, 61)); // #15803d
-                txt.Text = "â— Running";
+                txt.Text = LocalizationManager.GetString("Status_Running_Badge", "● Running");
                 break;
             case ProcessStatus.Faulted:
                 badge.Background = new SolidColorBrush(Color.FromRgb(254, 226, 226)); // #fee2e2
                 badge.BorderBrush = new SolidColorBrush(Color.FromRgb(252, 165, 165)); // #fca5a5
                 txt.Foreground = new SolidColorBrush(Color.FromRgb(185, 28, 28)); // #b91c1c
-                txt.Text = "âš  Lá»—i (Error)";
+                txt.Text = LocalizationManager.GetString("Status_Faulted_Badge", "⚠ Lỗi (Error)");
                 break;
             case ProcessStatus.Starting:
                 badge.Background = new SolidColorBrush(Color.FromRgb(254, 249, 195)); // #fef9c3
                 badge.BorderBrush = new SolidColorBrush(Color.FromRgb(253, 224, 71)); // #fde047
                 txt.Foreground = new SolidColorBrush(Color.FromRgb(161, 98, 7)); // #a16207
-                txt.Text = "â³ Starting...";
+                txt.Text = LocalizationManager.GetString("Status_Starting_Badge", "⏳ Starting...");
                 break;
             default:
                 badge.Background = new SolidColorBrush(Color.FromRgb(241, 245, 249)); // #f1f5f9
                 badge.BorderBrush = new SolidColorBrush(Color.FromRgb(203, 213, 225)); // #cbd5e1
                 txt.Foreground = new SolidColorBrush(Color.FromRgb(100, 116, 139)); // #64748b
-                txt.Text = "â—‹ Stopped";
+                txt.Text = LocalizationManager.GetString("Status_Stopped_Badge", "○ Stopped");
                 break;
         }
     }
@@ -251,7 +284,9 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            MessageBox.Show($"KhÃ´ng thá»ƒ má»Ÿ trÃ¬nh duyá»‡t: {ex.Message}", "Lá»—i", MessageBoxButton.OK, MessageBoxImage.Warning);
+            string errMsg = string.Format(LocalizationManager.GetString("Msg_BrowserError", "Không thể mở trình duyệt: {0}"), ex.Message);
+            string errTitle = LocalizationManager.GetString("Msg_ErrorTitle", "Lỗi");
+            MessageBox.Show(errMsg, errTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
@@ -260,14 +295,14 @@ public partial class MainWindow : Window
         RefreshVHosts();
         _serviceManager.ReloadVHosts();
 
-        TxtQuickAppStatus.Text = $"âœ“ {successMessage} (Domain: {projectName}.test)";
+        TxtQuickAppStatus.Text = $"✓ {successMessage} (Domain: {projectName}.test)";
         PnlQuickAppProgress.Visibility = Visibility.Visible;
         PbQuickApp.Value = 100;
 
-        // Äá»£i 800ms Ä‘á»ƒ Nginx master hoÃ n táº¥t reload cÃ¡c worker, Ä‘áº£m báº£o khi má»Ÿ trÃ¬nh duyá»‡t vhost má»›i Ä‘Ã£ sáºµn sÃ ng
+        // Đợi 800ms để Nginx master hoàn tất reload các worker, đảm bảo khi mở trình duyệt vhost mới đã sẵn sàng
         await Task.Delay(800);
 
-        // Má»Ÿ trÃ¬nh duyá»‡t náº¿u Ä‘Æ°á»£c chá»n
+        // Mở trình duyệt nếu được chọn
         if (ChkOpenBrowser?.IsChecked == true)
         {
             string url = $"http://{projectName}.test";
@@ -278,7 +313,7 @@ public partial class MainWindow : Window
             catch { }
         }
 
-        // Má»Ÿ thÆ° má»¥c dá»± Ã¡n trong Explorer náº¿u Ä‘Æ°á»£c chá»n
+        // Mở thư mục dự án trong Explorer nếu được chọn
         if (ChkOpenFolder?.IsChecked == true && Directory.Exists(projectDir))
         {
             try
@@ -294,9 +329,9 @@ public partial class MainWindow : Window
         if (!_serviceManager.IsRunning || _serviceManager.MySqlStatus != ProcessStatus.Running)
         {
             PnlQuickAppProgress.Visibility = Visibility.Visible;
-            TxtQuickAppStatus.Text = "Äang kÃ­ch hoáº¡t mÃ¡y chá»§ Nginx, PHP vÃ  MariaDB MySQL...";
+            TxtQuickAppStatus.Text = LocalizationManager.GetString("Msg_StartingServices", "Đang kích hoạt máy chủ Nginx, PHP và MariaDB MySQL...");
             await Task.Run(() => _serviceManager.StartAll());
-            // Äá»£i MySQL á»•n Ä‘á»‹nh nháº­n socket
+            // Đợi MySQL ổn định nhận socket
             await Task.Delay(1000);
         }
     }
@@ -306,7 +341,9 @@ public partial class MainWindow : Window
         string name = TxtQuickAppName.Text.Trim();
         if (string.IsNullOrWhiteSpace(name))
         {
-            MessageBox.Show("Vui lÃ²ng nháº­p tÃªn dá»± Ã¡n!", "ThÃ´ng bÃ¡o", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(LocalizationManager.GetString("Msg_EnterProjectName", "Vui lòng nhập tên dự án!"),
+                            LocalizationManager.GetString("Msg_NoticeTitle", "Thông báo"),
+                            MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
@@ -318,11 +355,12 @@ public partial class MainWindow : Window
 
         if (_quickAppManager.CreateBlankPhpApp(name, createDb, out string projectDir))
         {
-            AfterProjectCreated(name, projectDir, $"ÄÃ£ táº¡o dá»± Ã¡n Blank PHP '{name}'");
+            AfterProjectCreated(name, projectDir, string.Format(LocalizationManager.GetString("Msg_DeleteSuccess", "Đã tạo dự án '{0}'"), name));
         }
         else
         {
-            MessageBox.Show($"ThÆ° má»¥c dá»± Ã¡n '{name}' Ä‘Ã£ tá»“n táº¡i trong www/", "ThÃ´ng bÃ¡o", MessageBoxButton.OK, MessageBoxImage.Warning);
+            string existsMsg = string.Format(LocalizationManager.GetString("Msg_ProjectExists", "Thư mục dự án '{0}' đã tồn tại trong www/!"), name);
+            MessageBox.Show(existsMsg, LocalizationManager.GetString("Msg_NoticeTitle", "Thông báo"), MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
@@ -331,7 +369,9 @@ public partial class MainWindow : Window
         string name = TxtQuickAppName.Text.Trim();
         if (string.IsNullOrWhiteSpace(name))
         {
-            MessageBox.Show("Vui lÃ²ng nháº­p tÃªn dá»± Ã¡n!", "ThÃ´ng bÃ¡o", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(LocalizationManager.GetString("Msg_EnterProjectName", "Vui lòng nhập tên dự án!"),
+                            LocalizationManager.GetString("Msg_NoticeTitle", "Thông báo"),
+                            MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
@@ -348,7 +388,7 @@ public partial class MainWindow : Window
 
             PnlQuickAppProgress.Visibility = Visibility.Visible;
             PbQuickApp.Value = 0;
-            TxtQuickAppStatus.Text = "Äang khá»Ÿi táº¡o dá»± Ã¡n Laravel qua Composer...";
+            TxtQuickAppStatus.Text = LocalizationManager.GetString("Msg_CreatingLaravel", "Đang khởi tạo dự án Laravel qua Composer...");
 
             var result = await Task.Run(() => _quickAppManager.CreateLaravelAppAsync(name, createDb, (pct, msg) =>
             {
@@ -365,14 +405,14 @@ public partial class MainWindow : Window
             }
             else
             {
-                TxtQuickAppStatus.Text = "âœ— " + result.Message;
-                MessageBox.Show(result.Message, "Lá»—i táº¡o Laravel", MessageBoxButton.OK, MessageBoxImage.Warning);
+                TxtQuickAppStatus.Text = "✗ " + result.Message;
+                MessageBox.Show(result.Message, LocalizationManager.GetString("Msg_ErrorTitle", "Lỗi tạo Laravel"), MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
         catch (Exception ex)
         {
-            TxtQuickAppStatus.Text = "âœ— " + ex.Message;
-            MessageBox.Show($"Lá»—i trong quÃ¡ trÃ¬nh táº¡o dá»± Ã¡n: {ex.Message}", "Lá»—i ngoáº¡i lá»‡", MessageBoxButton.OK, MessageBoxImage.Error);
+            TxtQuickAppStatus.Text = "✗ " + ex.Message;
+            MessageBox.Show($"Lỗi trong quá trình tạo dự án: {ex.Message}", LocalizationManager.GetString("Msg_ErrorTitle", "Lỗi"), MessageBoxButton.OK, MessageBoxImage.Error);
         }
         finally
         {
@@ -385,7 +425,9 @@ public partial class MainWindow : Window
         string name = TxtQuickAppName.Text.Trim();
         if (string.IsNullOrWhiteSpace(name))
         {
-            MessageBox.Show("Vui lÃ²ng nháº­p tÃªn dá»± Ã¡n!", "ThÃ´ng bÃ¡o", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(LocalizationManager.GetString("Msg_EnterProjectName", "Vui lòng nhập tên dự án!"),
+                            LocalizationManager.GetString("Msg_NoticeTitle", "Thông báo"),
+                            MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
@@ -396,11 +438,12 @@ public partial class MainWindow : Window
 
         if (_quickAppManager.CreateStaticWebApp(name, out string projectDir))
         {
-            AfterProjectCreated(name, projectDir, $"ÄÃ£ táº¡o dá»± Ã¡n Static Web '{name}'");
+            AfterProjectCreated(name, projectDir, string.Format(LocalizationManager.GetString("Msg_DeleteSuccess", "Đã tạo dự án '{0}'"), name));
         }
         else
         {
-            MessageBox.Show($"ThÆ° má»¥c dá»± Ã¡n '{name}' Ä‘Ã£ tá»“n táº¡i trong www/", "ThÃ´ng bÃ¡o", MessageBoxButton.OK, MessageBoxImage.Warning);
+            string existsMsg = string.Format(LocalizationManager.GetString("Msg_ProjectExists", "Thư mục dự án '{0}' đã tồn tại trong www/!"), name);
+            MessageBox.Show(existsMsg, LocalizationManager.GetString("Msg_NoticeTitle", "Thông báo"), MessageBoxButton.OK, MessageBoxImage.Warning);
         }
     }
 
@@ -409,7 +452,9 @@ public partial class MainWindow : Window
         string name = TxtQuickAppName.Text.Trim();
         if (string.IsNullOrWhiteSpace(name))
         {
-            MessageBox.Show("Vui lÃ²ng nháº­p tÃªn dá»± Ã¡n!", "ThÃ´ng bÃ¡o", MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(LocalizationManager.GetString("Msg_EnterProjectName", "Vui lòng nhập tên dự án!"),
+                            LocalizationManager.GetString("Msg_NoticeTitle", "Thông báo"),
+                            MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
@@ -423,7 +468,7 @@ public partial class MainWindow : Window
 
             PnlQuickAppProgress.Visibility = Visibility.Visible;
             PbQuickApp.Value = 0;
-            TxtQuickAppStatus.Text = "Äang chuáº©n bá»‹ gÃ³i WordPress tá»« wordpress.org...";
+            TxtQuickAppStatus.Text = LocalizationManager.GetString("Msg_CreatingWordPress", "Đang chuẩn bị gói WordPress từ wordpress.org...");
 
             var result = await Task.Run(() => _quickAppManager.CreateWordPressAppAsync(name, createDb, (pct, msg) =>
             {
@@ -440,14 +485,14 @@ public partial class MainWindow : Window
             }
             else
             {
-                TxtQuickAppStatus.Text = "âœ— " + result.Message;
-                MessageBox.Show(result.Message, "Lá»—i táº¡o WordPress", MessageBoxButton.OK, MessageBoxImage.Warning);
+                TxtQuickAppStatus.Text = "✗ " + result.Message;
+                MessageBox.Show(result.Message, LocalizationManager.GetString("Msg_ErrorTitle", "Lỗi tạo WordPress"), MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
         catch (Exception ex)
         {
-            TxtQuickAppStatus.Text = "âœ— " + ex.Message;
-            MessageBox.Show($"Lá»—i trong quÃ¡ trÃ¬nh táº¡o dá»± Ã¡n: {ex.Message}", "Lá»—i ngoáº¡i lá»‡", MessageBoxButton.OK, MessageBoxImage.Error);
+            TxtQuickAppStatus.Text = "✗ " + ex.Message;
+            MessageBox.Show($"Lỗi trong quá trình tạo dự án: {ex.Message}", LocalizationManager.GetString("Msg_ErrorTitle", "Lỗi"), MessageBoxButton.OK, MessageBoxImage.Error);
         }
         finally
         {
@@ -459,7 +504,8 @@ public partial class MainWindow : Window
     {
         if (_serviceManager.ActivePhp != null)
         {
-            var exts = PhpExtensionManager.GetExtensions(_serviceManager.ActivePhp.RootPath);
+            bool isEn = LocalizationManager.CurrentLanguage == "en";
+            var exts = PhpExtensionManager.GetExtensions(_serviceManager.ActivePhp.RootPath, isEn);
             ListPhpExtensions.ItemsSource = exts;
         }
     }
@@ -501,9 +547,12 @@ public partial class MainWindow : Window
     {
         if (sender is Button btn && btn.Tag is ProjectInfo project)
         {
+            string confirmMsg = string.Format(LocalizationManager.GetString("Msg_ConfirmDelete"), project.Name, project.Domain, project.ProjectPath);
+            string confirmTitle = LocalizationManager.GetString("Msg_DeleteTitle", "Xác nhận xóa dự án");
+
             var confirm = MessageBox.Show(
-                $"Báº¡n cÃ³ cháº¯c cháº¯n muá»‘n xÃ³a dá»± Ã¡n '{project.Name}'?\n\nDomain: {project.Domain}\nThÆ° má»¥c: {project.ProjectPath}\n\nThao tÃ¡c nÃ y sáº½ xÃ³a vÄ©nh viá»…n thÆ° má»¥c dá»± Ã¡n vÃ  cáº¥u hÃ¬nh Virtual Host tÆ°Æ¡ng á»©ng!",
-                "XÃ¡c nháº­n xÃ³a dá»± Ã¡n",
+                confirmMsg,
+                confirmTitle,
                 MessageBoxButton.YesNo,
                 MessageBoxImage.Warning);
 
@@ -511,28 +560,32 @@ public partial class MainWindow : Window
             {
                 try
                 {
-                    // 1. XÃ³a file cáº¥u hÃ¬nh Nginx VHost náº¿u cÃ³
+                    // 1. Xóa file cấu hình Nginx VHost nếu có
                     string confPath = Path.Combine(_serviceManager.VHostGen.NginxSitesEnabledDir, $"auto.{project.Domain}.conf");
                     if (File.Exists(confPath))
                     {
                         try { File.Delete(confPath); } catch { }
                     }
 
-                    // 2. XÃ³a thÆ° má»¥c dá»± Ã¡n trong www/
+                    // 2. Xóa thư mục dự án trong www/
                     if (Directory.Exists(project.ProjectPath))
                     {
                         Directory.Delete(project.ProjectPath, recursive: true);
                     }
 
-                    // 3. Táº£i láº¡i danh sÃ¡ch vÃ  Ä‘á»“ng bá»™ VHosts
+                    // 3. Tải lại danh sách và đồng bộ VHosts
                     RefreshVHosts();
                     await Task.Run(() => _serviceManager.ReloadVHosts());
 
-                    MessageBox.Show($"ÄÃ£ xÃ³a dá»± Ã¡n '{project.Name}' thÃ nh cÃ´ng!", "ThÃ´ng bÃ¡o", MessageBoxButton.OK, MessageBoxImage.Information);
+                    string successMsg = string.Format(LocalizationManager.GetString("Msg_DeleteSuccess", "Đã xóa dự án '{0}' thành công!"), project.Name);
+                    string noticeTitle = LocalizationManager.GetString("Msg_NoticeTitle", "Thông báo");
+                    MessageBox.Show(successMsg, noticeTitle, MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show($"KhÃ´ng thá»ƒ xÃ³a dá»± Ã¡n: {ex.Message}", "Lá»—i", MessageBoxButton.OK, MessageBoxImage.Error);
+                    string errMsg = string.Format(LocalizationManager.GetString("Msg_DeleteError", "Không thể xóa dự án: {0}"), ex.Message);
+                    string errTitle = LocalizationManager.GetString("Msg_ErrorTitle", "Lỗi");
+                    MessageBox.Show(errMsg, errTitle, MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
@@ -595,7 +648,7 @@ public partial class MainWindow : Window
     {
         if (!_isExiting)
         {
-            // Thay vÃ¬ táº¯t háº³n, áº©n vÃ o Khay há»‡ thá»‘ng
+            // Thay vì tắt hẳn, ẩn vào Khay hệ thống
             e.Cancel = true;
             Hide();
         }
@@ -610,7 +663,7 @@ public partial class MainWindow : Window
         if (_isExiting) return;
         _isExiting = true;
 
-        // 1. áº¨n ngay TrayIcon á»Ÿ khay há»‡ thá»‘ng Ä‘á»ƒ táº¡o pháº£n há»“i tá»©c thÃ¬
+        // 1. Ẩn ngay TrayIcon ở khay hệ thống để tạo phản hồi tức thì
         try
         {
             TrayIcon.Visibility = Visibility.Collapsed;
@@ -618,14 +671,14 @@ public partial class MainWindow : Window
         }
         catch { }
 
-        // 2. áº¨n cá»­a sá»• ngay
+        // 2. Ẩn cửa sổ ngay
         try
         {
             Hide();
         }
         catch { }
 
-        // 3. Dá»«ng dá»‹ch vá»¥ trÃªn background task vá»›i timeout 1.5 giÃ¢y
+        // 3. Dừng dịch vụ trên background task với timeout 1.5 giây
         try
         {
             await Task.Run(() =>
@@ -636,7 +689,7 @@ public partial class MainWindow : Window
         }
         catch { }
 
-        // 4. QuÃ©t sáº¡ch cÃ¡c tiáº¿n trÃ¬nh con Novagon cÃ²n sÃ³t láº¡i
+        // 4. Quét sạch các tiến trình con Novagon còn sót lại
         KillOrphanedNovagonProcesses();
 
         System.Windows.Application.Current.Shutdown();
@@ -675,7 +728,23 @@ public partial class MainWindow : Window
 
     private void RefreshPackageList()
     {
+        bool isEn = LocalizationManager.CurrentLanguage == "en";
         var packages = _packageManager.GetAvailablePackages();
+        foreach (var p in packages)
+        {
+            if (isEn)
+            {
+                p.DisplayName = p.DisplayName
+                    .Replace("(Khuyến nghị, NTS x64)", "(Recommended, NTS x64)")
+                    .Replace("(LTS ổn định, NTS x64)", "(LTS Stable, NTS x64)")
+                    .Replace("(Tương thích MySQL 8.0, x64)", "(MySQL 8.0 Compatible, x64)");
+                p.CustomActionText = p.IsInstalled ? "✓ Installed" : "Download (1-Click)";
+            }
+            else
+            {
+                p.CustomActionText = p.IsInstalled ? "✓ Đã cài đặt" : "Tải về (1-Click)";
+            }
+        }
         ListPackages.ItemsSource = packages;
     }
 
@@ -686,7 +755,7 @@ public partial class MainWindow : Window
             btn.IsEnabled = false;
             PnlDownloadProgress.Visibility = Visibility.Visible;
             PbDownload.Value = 0;
-            TxtDownloadStatus.Text = $"Báº¯t Ä‘áº§u táº£i {pkg.DisplayName}...";
+            TxtDownloadStatus.Text = string.Format(LocalizationManager.GetString("Msg_DownloadingPkg", "Bắt đầu tải {0}..."), pkg.DisplayName);
 
             var result = await Task.Run(() => _packageManager.DownloadAndInstallAsync(pkg, (pct, msg) =>
             {
@@ -699,13 +768,13 @@ public partial class MainWindow : Window
 
             if (result.Success)
             {
-                TxtDownloadStatus.Text = $"âœ“ {result.Message}";
+                TxtDownloadStatus.Text = $"✓ {result.Message}";
                 LoadRuntimes();
                 RefreshPackageList();
             }
             else
             {
-                TxtDownloadStatus.Text = $"âœ— {result.Message}";
+                TxtDownloadStatus.Text = $"✗ " + result.Message;
                 btn.IsEnabled = true;
             }
         }

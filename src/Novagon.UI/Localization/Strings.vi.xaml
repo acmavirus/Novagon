@@ -1,0 +1,138 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+
+    <!-- Header & App -->
+    <sys:String x:Key="App_Title">NOVAGON - Môi trường Phát triển Cục bộ</sys:String>
+    <sys:String x:Key="Admin_Badge">Chạy quyền Administrator</sys:String>
+    <sys:String x:Key="NonAdmin_Badge">Quyền Người dùng Thường</sys:String>
+    <sys:String x:Key="Menu_Settings">Cài đặt cấu hình (Settings)</sys:String>
+
+    <!-- Top Action Buttons -->
+    <sys:String x:Key="Btn_StartAll">Start All</sys:String>
+    <sys:String x:Key="Btn_StopAll">Stop All</sys:String>
+    <sys:String x:Key="Btn_ReloadVHosts">Reload VHosts</sys:String>
+    <sys:String x:Key="Btn_Database">Database</sys:String>
+    <sys:String x:Key="Btn_Terminal">Terminal</sys:String>
+    <sys:String x:Key="Btn_RootWww">Root (www)</sys:String>
+
+    <!-- Status Bar / Cards -->
+    <sys:String x:Key="Svc_WebServer">WEB SERVER</sys:String>
+    <sys:String x:Key="Svc_Database">DATABASE</sys:String>
+    <sys:String x:Key="Svc_PhpFastCgi">PHP FASTCGI</sys:String>
+    <sys:String x:Key="Svc_Redis">REDIS CACHE</sys:String>
+    <sys:String x:Key="Status_Stopped">Stopped</sys:String>
+    <sys:String x:Key="Status_Running">Online</sys:String>
+    <sys:String x:Key="Status_PortPrefix">Cổng:</sys:String>
+    <sys:String x:Key="Overall_Online">Running (Online)</sys:String>
+    <sys:String x:Key="Overall_Stopped">Start All (Stopped)</sys:String>
+    <sys:String x:Key="Status_NotInstalled">Chưa cài đặt</sys:String>
+    <sys:String x:Key="Status_NotInstalled_Short">○ Chưa cài</sys:String>
+    <sys:String x:Key="Status_NotInstalled_Hub">Chưa cài đặt (Hub)</sys:String>
+    <sys:String x:Key="Status_Running_Badge">● Running</sys:String>
+    <sys:String x:Key="Status_Faulted_Badge">⚠ Lỗi (Error)</sys:String>
+    <sys:String x:Key="Status_Starting_Badge">⏳ Starting...</sys:String>
+    <sys:String x:Key="Status_Stopped_Badge">○ Stopped</sys:String>
+
+    <!-- Main Navigation Tabs -->
+    <sys:String x:Key="Tab_VHosts">Virtual Hosts</sys:String>
+    <sys:String x:Key="Tab_QuickApp">Tạo dự án (Quick App)</sys:String>
+    <sys:String x:Key="Tab_Runtimes">Cấu hình Runtimes</sys:String>
+    <sys:String x:Key="Tab_Hub">Kho Runtimes (Hub)</sys:String>
+    <sys:String x:Key="Tab_Logs">Nhật ký (Logs)</sys:String>
+
+    <!-- Tab 1: Virtual Hosts -->
+    <sys:String x:Key="Desc_VHosts">Danh sách các dự án tự nhận diện trong www/ (TLD: .test)</sys:String>
+    <sys:String x:Key="Col_ProjectName">Tên dự án</sys:String>
+    <sys:String x:Key="Col_Domain">Domain</sys:String>
+    <sys:String x:Key="Col_DocRoot">Thư mục gốc</sys:String>
+    <sys:String x:Key="Col_Actions">Thao tác</sys:String>
+    <sys:String x:Key="Btn_OpenWebsite">Mở</sys:String>
+    <sys:String x:Key="Btn_OpenFolder">Thư mục</sys:String>
+    <sys:String x:Key="Btn_DeleteProject">Xóa</sys:String>
+    <sys:String x:Key="Empty_VHosts">Chưa có dự án nào trong www/. Hãy tạo dự án tại tab 'Tạo dự án' hoặc thêm thư mục vào www/.</sys:String>
+
+    <!-- Tab 2: Quick App Creation -->
+    <sys:String x:Key="Lbl_ProjectName">Tên thư mục dự án:</sys:String>
+    <sys:String x:Key="Hint_VHostAuto">Virtual Host tự động kích hoạt ngay sau khi tạo</sys:String>
+    <sys:String x:Key="Lbl_ConfigOptions">Tùy chọn cấu hình:</sys:String>
+    <sys:String x:Key="Chk_AutoCreateDb">Tự động tạo Database MySQL</sys:String>
+    <sys:String x:Key="Chk_OpenBrowser">Mở trình duyệt sau khi tạo</sys:String>
+    <sys:String x:Key="Chk_OpenExplorer">Mở thư mục trong Explorer</sys:String>
+
+    <!-- Quick App Cards -->
+    <sys:String x:Key="Card_Wp_Title">WordPress</sys:String>
+    <sys:String x:Key="Card_Wp_Badge">CMS v6.x</sys:String>
+    <sys:String x:Key="Card_Wp_Desc">Tự động tải WordPress mới nhất từ wordpress.org, sinh wp-config.php chuẩn hóa (Salts bảo mật, Direct FS, 256M RAM), tạo sẵn Database MySQL và VHost.</sys:String>
+    <sys:String x:Key="Btn_CreateWp">⚡ Tạo WordPress 1-Click</sys:String>
+
+    <sys:String x:Key="Card_Laravel_Title">Laravel</sys:String>
+    <sys:String x:Key="Card_Laravel_Badge">Framework v11.x</sys:String>
+    <sys:String x:Key="Card_Laravel_Desc">Cài đặt dự án Laravel chuẩn 100% bằng Composer (đầy đủ Framework, Artisan CLI, Vendor packages), tự cấu hình .env kết nối MySQL và trỏ VHost vào public/.</sys:String>
+    <sys:String x:Key="Btn_CreateLaravel">⚡ Tạo Laravel (Composer)</sys:String>
+
+    <sys:String x:Key="Card_Php_Title">PHP Project (Trống)</sys:String>
+    <sys:String x:Key="Card_Php_Badge">PHP 8.x Starter</sys:String>
+    <sys:String x:Key="Card_Php_Desc">Khởi tạo thư mục dự án PHP thuần kèm trang kiểm tra kết nối Database MySQL (PDO), phiên bản PHP, cấu hình Web Server và link xem PHP Info nhanh.</sys:String>
+    <sys:String x:Key="Btn_CreatePhp">⚡ Tạo Blank PHP</sys:String>
+
+    <sys:String x:Key="Card_Static_Title">Static Web (HTML5)</sys:String>
+    <sys:String x:Key="Card_Static_Badge">Frontend Template</sys:String>
+    <sys:String x:Key="Card_Static_Desc">Dự án web tĩnh cấu trúc chuẩn gồm index.html, style.css và app.js phong cách hiện đại, responsive, sẵn sàng phát triển Landing Page hoặc Web UI.</sys:String>
+    <sys:String x:Key="Btn_CreateStatic">⚡ Tạo Static Web</sys:String>
+
+    <!-- Tab 3: Runtime Settings -->
+    <sys:String x:Key="Lbl_SelectPhp">Lựa chọn phiên bản PHP:</sys:String>
+    <sys:String x:Key="Lbl_SelectDb">Lựa chọn phiên bản MySQL / MariaDB:</sys:String>
+    <sys:String x:Key="Lbl_WebEngine">Máy chủ Web Server:</sys:String>
+    <sys:String x:Key="Lbl_PhpExtTitle">Quản lý PHP Extensions (Click bật/tắt trong php.ini):</sys:String>
+
+    <!-- Tab 4: Hub Downloads -->
+    <sys:String x:Key="Lbl_HubTitle">Tải và cài đặt tự động các phiên bản PHP, MySQL, Redis (1-Click, không cần tự cấu hình zip):</sys:String>
+    <sys:String x:Key="Col_PkgName">Gói Runtime</sys:String>
+    <sys:String x:Key="Col_PkgCat">Danh mục</sys:String>
+    <sys:String x:Key="Col_PkgSize">Dung lượng</sys:String>
+    <sys:String x:Key="Btn_InstallNow">Tải &amp; Cài đặt</sys:String>
+
+    <!-- Tab 5: Logs -->
+    <sys:String x:Key="Btn_ClearLogs">Xóa Logs</sys:String>
+
+    <!-- Context Menu Tray -->
+    <sys:String x:Key="Tray_OpenApp">Mở giao diện Novagon</sys:String>
+    <sys:String x:Key="Tray_StartAll">Khởi động toàn bộ dịch vụ</sys:String>
+    <sys:String x:Key="Tray_StopAll">Dừng toàn bộ dịch vụ</sys:String>
+    <sys:String x:Key="Tray_ReloadVHosts">Tải lại Virtual Hosts</sys:String>
+    <sys:String x:Key="Tray_Db">Cơ sở dữ liệu (phpMyAdmin)</sys:String>
+    <sys:String x:Key="Tray_Terminal">Cửa sổ dòng lệnh (Terminal)</sys:String>
+    <sys:String x:Key="Tray_RootWww">Thư mục gốc (www)</sys:String>
+    <sys:String x:Key="Tray_Settings">Cài đặt (Settings)...</sys:String>
+    <sys:String x:Key="Tray_Exit">Thoát hoàn toàn</sys:String>
+
+    <!-- Settings Window -->
+    <sys:String x:Key="Settings_Title">Cài đặt Novagon</sys:String>
+    <sys:String x:Key="Settings_SectionGeneral">Cài đặt Chung</sys:String>
+    <sys:String x:Key="Settings_Language">Ngôn ngữ hiển thị (Language):</sys:String>
+    <sys:String x:Key="Settings_Language_Vi">🇻🇳 Tiếng Việt (Vietnamese)</sys:String>
+    <sys:String x:Key="Settings_Language_En">🇬🇧 English</sys:String>
+    <sys:String x:Key="Settings_Tld">Đuôi tên miền ảo mặc định (TLD):</sys:String>
+    <sys:String x:Key="Settings_TldHint">Mặc định: test (tạo tên miền dạng: du-an.test)</sys:String>
+    <sys:String x:Key="Settings_AutoStart">Tự động khởi động tất cả dịch vụ khi mở Novagon</sys:String>
+    <sys:String x:Key="Btn_SaveSettings">Lưu cài đặt</sys:String>
+    <sys:String x:Key="Btn_Close">Đóng</sys:String>
+
+    <!-- Dialogs & Notifications -->
+    <sys:String x:Key="Msg_EnterProjectName">Vui lòng nhập tên dự án!</sys:String>
+    <sys:String x:Key="Msg_ProjectExists">Thư mục dự án '{0}' đã tồn tại trong www/!</sys:String>
+    <sys:String x:Key="Msg_ConfirmDelete">Bạn có chắc chắn muốn xóa dự án '{0}'?&#x0a;&#x0a;Domain: {1}&#x0a;Thư mục: {2}&#x0a;&#x0a;Thao tác này sẽ xóa vĩnh viễn thư mục dự án và cấu hình Virtual Host tương ứng!</sys:String>
+    <sys:String x:Key="Msg_DeleteTitle">Xác nhận xóa dự án</sys:String>
+    <sys:String x:Key="Msg_DeleteSuccess">Đã xóa dự án '{0}' thành công!</sys:String>
+    <sys:String x:Key="Msg_DeleteError">Không thể xóa dự án: {0}</sys:String>
+    <sys:String x:Key="Msg_BrowserError">Không thể mở trình duyệt: {0}</sys:String>
+    <sys:String x:Key="Msg_StartingServices">Đang kích hoạt máy chủ Nginx, PHP và MariaDB MySQL...</sys:String>
+    <sys:String x:Key="Msg_CreatingLaravel">Đang khởi tạo dự án Laravel qua Composer...</sys:String>
+    <sys:String x:Key="Msg_CreatingWordPress">Đang chuẩn bị gói WordPress từ wordpress.org...</sys:String>
+    <sys:String x:Key="Msg_DownloadingPkg">Bắt đầu tải {0}...</sys:String>
+    <sys:String x:Key="Msg_Processing">Đang xử lý...</sys:String>
+    <sys:String x:Key="Msg_NoticeTitle">Thông báo</sys:String>
+    <sys:String x:Key="Msg_ErrorTitle">Lỗi</sys:String>
+</ResourceDictionary>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -8,36 +8,36 @@ namespace Novagon.Core.Runtimes;
 public record PhpExtensionItem(string Name, bool IsEnabled, string Description);
 
 /// <summary>
-/// Quáº£n lÃ½ báº­t/táº¯t cÃ¡c Extension PHP trong file php.ini má»™t cÃ¡ch trá»±c quan, 1-click.
+/// Quản lý bật/tắt các Extension PHP trong file php.ini một cách trực quan, 1-click.
 /// </summary>
 public class PhpExtensionManager
 {
-    private static readonly Dictionary<string, string> KnownExtensions = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly Dictionary<string, (string Vi, string En)> KnownExtensions = new(StringComparer.OrdinalIgnoreCase)
     {
-        { "curl", "ThÆ° viá»‡n gá»­i HTTP Request / API cURL" },
-        { "mbstring", "Xá»­ lÃ½ chuá»—i Unicode / UTF-8 Ä‘a byte" },
-        { "mysqli", "Driver káº¿t ná»‘i MySQL cáº£i tiáº¿n" },
-        { "pdo_mysql", "PDO Driver káº¿t ná»‘i MySQL/MariaDB (Laravel/WP)" },
-        { "openssl", "MÃ£ hÃ³a SSL/TLS, HTTPS vÃ  báº£o máº­t" },
-        { "fileinfo", "Nháº­n diá»‡n Ä‘á»‹nh dáº¡ng tá»‡p táº£i lÃªn (MIME type)" },
-        { "gd", "Xá»­ lÃ½ cáº¯t ghÃ©p, nÃ©n vÃ  chá»‰nh sá»­a hÃ¬nh áº£nh" },
-        { "zip", "Äá»c vÃ  giáº£i nÃ©n tá»‡p tin .zip" },
-        { "intl", "Há»— trá»£ Ä‘a ngÃ´n ngá»¯ vÃ  Ä‘á»‹nh dáº¡ng tiá»n tá»‡/thá»i gian" },
-        { "sqlite3", "CÆ¡ sá»Ÿ dá»¯ liá»‡u SQLite cá»¥c bá»™" },
-        { "pdo_sqlite", "PDO Driver cho SQLite" },
-        { "exif", "Äá»c siÃªu dá»¯ liá»‡u áº£nh mÃ¡y áº£nh (EXIF)" },
-        { "soap", "Web Service giao thá»©c SOAP / XML" },
-        { "sodium", "ThÆ° viá»‡n mÃ£ hÃ³a máº­t mÃ£ há»c hiá»‡n Ä‘áº¡i" }
+        { "curl", ("Thư viện gửi HTTP Request / API cURL", "HTTP Request / cURL API library") },
+        { "mbstring", ("Xử lý chuỗi Unicode / UTF-8 đa byte", "Multibyte string / UTF-8 Unicode processing") },
+        { "mysqli", ("Driver kết nối MySQL cải tiến", "Improved MySQL database driver") },
+        { "pdo_mysql", ("PDO Driver kết nối MySQL/MariaDB (Laravel/WP)", "PDO Driver for MySQL/MariaDB (Laravel/WP)") },
+        { "openssl", ("Mã hóa SSL/TLS, HTTPS và bảo mật", "SSL/TLS encryption, HTTPS and cryptography") },
+        { "fileinfo", ("Nhận diện định dạng tệp tải lên (MIME type)", "File MIME type inspection and detection") },
+        { "gd", ("Xử lý cắt ghép, nén và chỉnh sửa hình ảnh", "Image processing, cropping, compression (GD)") },
+        { "zip", ("Đọc và giải nén tệp tin .zip", "Read and extract .zip archive files") },
+        { "intl", ("Hỗ trợ đa ngôn ngữ và định dạng tiền tệ/thời gian", "Internationalization / localization currency & date formatting") },
+        { "sqlite3", ("Cơ sở dữ liệu SQLite cục bộ", "Embedded local SQLite3 database") },
+        { "pdo_sqlite", ("PDO Driver cho SQLite", "PDO Driver for SQLite databases") },
+        { "exif", ("Đọc siêu dữ liệu ảnh máy ảnh (EXIF)", "Read camera EXIF metadata from images") },
+        { "soap", ("Web Service giao thức SOAP / XML", "SOAP / XML Web Service protocol") },
+        { "sodium", ("Thư viện mã hóa mật mã học hiện đại", "Modern high-security cryptographic library") }
     };
 
-    public static List<PhpExtensionItem> GetExtensions(string phpRootPath)
+    public static List<PhpExtensionItem> GetExtensions(string phpRootPath, bool isEn = false)
     {
         var result = new List<PhpExtensionItem>();
         string iniPath = Path.Combine(phpRootPath, "php.ini");
 
         if (!File.Exists(iniPath))
         {
-            // Náº¿u chÆ°a cÃ³ php.ini, thá»­ tÃ¬m php.ini-development
+            // Nếu chưa có php.ini, thử tìm php.ini-development
             string devIni = Path.Combine(phpRootPath, "php.ini-development");
             if (File.Exists(devIni))
             {
@@ -56,7 +56,7 @@ public class PhpExtensionManager
         foreach (string line in lines)
         {
             string trimmed = line.Trim();
-            // Khá»›p: extension=curl hoáº·c ;extension=curl hoáº·c extension=php_curl.dll
+            // Khớp: extension=curl hoặc ;extension=curl hoặc extension=php_curl.dll
             var match = Regex.Match(trimmed, @"^(;?)\s*extension\s*=\s*(?:php_)?([a-zA-Z0-9_]+)(?:\.dll)?$", RegexOptions.IgnoreCase);
             if (match.Success)
             {
@@ -73,7 +73,8 @@ public class PhpExtensionManager
         foreach (var kv in KnownExtensions)
         {
             bool isEnabled = activeSet.Contains(kv.Key);
-            result.Add(new PhpExtensionItem(kv.Key, isEnabled, kv.Value));
+            string desc = isEn ? kv.Value.En : kv.Value.Vi;
+            result.Add(new PhpExtensionItem(kv.Key, isEnabled, desc));
         }
 
         return result;
@@ -120,4 +121,3 @@ public class PhpExtensionManager
         return true;
     }
 }
-
