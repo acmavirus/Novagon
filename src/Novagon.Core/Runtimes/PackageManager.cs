@@ -55,14 +55,39 @@ public class PackageManager
 
             new("redis", "5.0.14", "Redis 5.0.14 (In-memory Cache Server x64)",
                 "https://github.com/tporadowski/redis/releases/download/v5.0.14.1/Redis-x64-5.0.14.1.zip",
-                "redis-5.0.14", "~5 MB")
+                "redis-5.0.14", "~5 MB"),
+
+            new("tools", "2.8.2", "Composer 2.8.2 (PHP Package Manager)",
+                "https://getcomposer.org/download/latest-stable/composer.phar",
+                "composer", "~3 MB"),
+
+            new("nodejs", "20.18.0", "Node.js 20.18.0 LTS (với npm & npx)",
+                "https://nodejs.org/dist/v20.18.0/node-v20.18.0-win-x64.zip",
+                "node-v20", "~31 MB"),
+
+            new("tools", "1.21.8", "Mailpit 1.21.8 (Local Email Catcher & Web UI)",
+                "https://github.com/axllent/mailpit/releases/download/v1.21.8/mailpit-windows-amd64.zip",
+                "mailpit", "~14 MB")
         };
 
         // Kiểm tra xem package nào đã cài đặt
         foreach (var pkg in packages)
         {
-            string pkgPath = Path.Combine(_baseBinDir, pkg.Category, pkg.TargetFolderName);
-            pkg.IsInstalled = Directory.Exists(pkgPath);
+            if (pkg.Category == "tools" && pkg.TargetFolderName == "composer")
+            {
+                string pharPath = Path.Combine(_baseBinDir, "composer", "composer.phar");
+                pkg.IsInstalled = File.Exists(pharPath);
+            }
+            else if (pkg.Category == "tools" && pkg.TargetFolderName == "mailpit")
+            {
+                string mailpitExe = Path.Combine(_baseBinDir, "tools", "mailpit", "mailpit.exe");
+                pkg.IsInstalled = File.Exists(mailpitExe);
+            }
+            else
+            {
+                string pkgPath = Path.Combine(_baseBinDir, pkg.Category, pkg.TargetFolderName);
+                pkg.IsInstalled = Directory.Exists(pkgPath);
+            }
         }
 
         return packages;
@@ -114,21 +139,50 @@ public class PackageManager
 
             onProgress?.Invoke(92, "Đang giải nén gói runtime...");
 
-            // Giải nén gói vào thư mục đích
-            if (Directory.Exists(targetDir))
+            if (pkg.DownloadUrl.EndsWith(".phar", StringComparison.OrdinalIgnoreCase))
             {
-                Directory.Delete(targetDir, true);
-            }
+                Directory.CreateDirectory(targetDir);
+                string pharDest = Path.Combine(targetDir, "composer.phar");
+                File.Copy(tempZip, pharDest, true);
 
-            // Với MariaDB, file zip chứa sẵn thư mục con `mariadb-10.11.8-winx64/`
-            if (pkg.Category == "mysql")
-            {
-                ZipFile.ExtractToDirectory(tempZip, catDir, true);
+                string batDest = Path.Combine(targetDir, "composer.bat");
+                string batContent = "@echo off\r\nphp \"%~dp0composer.phar\" %*\r\n";
+                File.WriteAllText(batDest, batContent);
+
+                // Đồng thời đồng bộ sang bin/tools/
+                string toolsDir = Path.Combine(_baseBinDir, "tools");
+                Directory.CreateDirectory(toolsDir);
+                File.Copy(batDest, Path.Combine(toolsDir, "composer.bat"), true);
+                File.Copy(pharDest, Path.Combine(toolsDir, "composer.phar"), true);
             }
             else
             {
-                Directory.CreateDirectory(targetDir);
-                ZipFile.ExtractToDirectory(tempZip, targetDir, true);
+                // Giải nén gói vào thư mục đích
+                if (Directory.Exists(targetDir))
+                {
+                    Directory.Delete(targetDir, true);
+                }
+
+                // Với MariaDB, file zip chứa sẵn thư mục con `mariadb-10.11.8-winx64/`
+                if (pkg.Category == "mysql")
+                {
+                    ZipFile.ExtractToDirectory(tempZip, catDir, true);
+                }
+                else if (pkg.Category == "nodejs")
+                {
+                    ZipFile.ExtractToDirectory(tempZip, catDir, true);
+                    string extractedNode = Path.Combine(catDir, "node-v20.18.0-win-x64");
+                    if (Directory.Exists(extractedNode) && extractedNode != targetDir)
+                    {
+                        if (Directory.Exists(targetDir)) Directory.Delete(targetDir, true);
+                        Directory.Move(extractedNode, targetDir);
+                    }
+                }
+                else
+                {
+                    Directory.CreateDirectory(targetDir);
+                    ZipFile.ExtractToDirectory(tempZip, targetDir, true);
+                }
             }
 
             // Nếu là gói PHP, tự động sinh php.ini với cấu hình tối ưu
@@ -182,5 +236,53 @@ public class PackageManager
             }
         }
         catch { }
+    }
+
+    public bool UninstallPackage(AvailablePackage pkg)
+    {
+        try
+        {
+            if (pkg.Category == "tools" && pkg.TargetFolderName == "composer")
+            {
+                string pharPath = Path.Combine(_baseBinDir, "composer", "composer.phar");
+                string batPath = Path.Combine(_baseBinDir, "composer", "composer.bat");
+                if (File.Exists(pharPath)) File.Delete(pharPath);
+                if (File.Exists(batPath)) File.Delete(batPath);
+
+                string toolsPhar = Path.Combine(_baseBinDir, "tools", "composer.phar");
+                string toolsBat = Path.Combine(_baseBinDir, "tools", "composer.bat");
+                if (File.Exists(toolsPhar)) File.Delete(toolsPhar);
+                if (File.Exists(toolsBat)) File.Delete(toolsBat);
+
+                string compDir = Path.Combine(_baseBinDir, "composer");
+                if (Directory.Exists(compDir) && Directory.GetFileSystemEntries(compDir).Length == 0)
+                {
+                    try { Directory.Delete(compDir, true); } catch { }
+                }
+            }
+            else if (pkg.Category == "tools" && pkg.TargetFolderName == "mailpit")
+            {
+                string mailpitDir = Path.Combine(_baseBinDir, "tools", "mailpit");
+                if (Directory.Exists(mailpitDir))
+                {
+                    Directory.Delete(mailpitDir, true);
+                }
+            }
+            else
+            {
+                string pkgPath = Path.Combine(_baseBinDir, pkg.Category, pkg.TargetFolderName);
+                if (Directory.Exists(pkgPath))
+                {
+                    Directory.Delete(pkgPath, true);
+                }
+            }
+
+            pkg.IsInstalled = false;
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

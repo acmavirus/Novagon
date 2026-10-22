@@ -47,9 +47,16 @@
     <sys:String x:Key="Col_Domain">Domain</sys:String>
     <sys:String x:Key="Col_DocRoot">Thư mục gốc</sys:String>
     <sys:String x:Key="Col_Actions">Thao tác</sys:String>
-    <sys:String x:Key="Btn_OpenWebsite">Mở</sys:String>
+    <sys:String x:Key="Btn_OpenWebsite">Mở Web</sys:String>
     <sys:String x:Key="Btn_OpenFolder">Thư mục</sys:String>
+    <sys:String x:Key="Btn_OpenVsCode">VS Code</sys:String>
+    <sys:String x:Key="Btn_OpenTerminal">Terminal</sys:String>
     <sys:String x:Key="Btn_DeleteProject">Xóa</sys:String>
+    <sys:String x:Key="Tooltip_OpenBrowser">Mở website trong trình duyệt</sys:String>
+    <sys:String x:Key="Tooltip_OpenFolder">Mở thư mục dự án trong File Explorer</sys:String>
+    <sys:String x:Key="Tooltip_OpenVsCode">Mở dự án trong Visual Studio Code</sys:String>
+    <sys:String x:Key="Tooltip_OpenTerminal">Mở Terminal tại thư mục dự án này</sys:String>
+    <sys:String x:Key="Tooltip_DeleteProject">Xóa dự án và Virtual Host</sys:String>
     <sys:String x:Key="Empty_VHosts">Chưa có dự án nào trong www/. Hãy tạo dự án tại tab 'Tạo dự án' hoặc thêm thư mục vào www/.</sys:String>
 
     <!-- Tab 2: Quick App Creation -->
@@ -88,11 +95,22 @@
     <sys:String x:Key="Lbl_PhpExtTitle">Quản lý PHP Extensions (Click bật/tắt trong php.ini):</sys:String>
 
     <!-- Tab 4: Hub Downloads -->
-    <sys:String x:Key="Lbl_HubTitle">Tải và cài đặt tự động các phiên bản PHP, MySQL, Redis (1-Click, không cần tự cấu hình zip):</sys:String>
+    <sys:String x:Key="Lbl_HubTitle">Kho cài đặt tự động các gói PHP, MySQL, Redis, Node.js, Công cụ:</sys:String>
+    <sys:String x:Key="Lbl_FilterCategory">Lọc danh mục:</sys:String>
+    <sys:String x:Key="Filter_All">Tất cả danh mục</sys:String>
+    <sys:String x:Key="Filter_Tools">Công cụ (Tools)</sys:String>
+    <sys:String x:Key="Status_Installed_Badge">✓ Đã cài</sys:String>
+    <sys:String x:Key="Btn_UninstallPkg">Gỡ</sys:String>
+    <sys:String x:Key="Tooltip_UninstallPkg">Gỡ bỏ và xóa gói này khỏi bin/</sys:String>
     <sys:String x:Key="Col_PkgName">Gói Runtime</sys:String>
     <sys:String x:Key="Col_PkgCat">Danh mục</sys:String>
     <sys:String x:Key="Col_PkgSize">Dung lượng</sys:String>
     <sys:String x:Key="Btn_InstallNow">Tải &amp; Cài đặt</sys:String>
+    <sys:String x:Key="Msg_ConfirmUninstallPkg">Bạn có chắc chắn muốn gỡ cài đặt gói '{0}'?&#x0a;&#x0a;Thao tác này sẽ xóa các tệp thực thi của gói khỏi thư mục bin/.</sys:String>
+    <sys:String x:Key="Msg_UninstallTitle">Xác nhận gỡ cài đặt</sys:String>
+    <sys:String x:Key="Msg_UninstallSuccess">Đã gỡ cài đặt '{0}' thành công!</sys:String>
+    <sys:String x:Key="Msg_UninstallError">Không thể gỡ cài đặt gói. Tệp có thể đang được sử dụng bởi tiến trình khác.</sys:String>
+    <sys:String x:Key="Msg_StopServiceBeforeUninstall">Vui lòng bấm 'Dừng' (Stop All) các dịch vụ trước khi gỡ cài đặt phiên bản đang hoạt động!</sys:String>
 
     <!-- Tab 5: Logs -->
     <sys:String x:Key="Btn_ClearLogs">Xóa Logs</sys:String>
@@ -103,6 +121,7 @@
     <sys:String x:Key="Tray_StopAll">Dừng toàn bộ dịch vụ</sys:String>
     <sys:String x:Key="Tray_ReloadVHosts">Tải lại Virtual Hosts</sys:String>
     <sys:String x:Key="Tray_Db">Cơ sở dữ liệu (phpMyAdmin)</sys:String>
+    <sys:String x:Key="Tray_Mailpit">Xem Email (Mailpit)</sys:String>
     <sys:String x:Key="Tray_Terminal">Cửa sổ dòng lệnh (Terminal)</sys:String>
     <sys:String x:Key="Tray_RootWww">Thư mục gốc (www)</sys:String>
     <sys:String x:Key="Tray_Settings">Cài đặt (Settings)...</sys:String>
@@ -117,6 +136,7 @@
     <sys:String x:Key="Settings_Tld">Đuôi tên miền ảo mặc định (TLD):</sys:String>
     <sys:String x:Key="Settings_TldHint">Mặc định: test (tạo tên miền dạng: du-an.test)</sys:String>
     <sys:String x:Key="Settings_AutoStart">Tự động khởi động tất cả dịch vụ khi mở Novagon</sys:String>
+    <sys:String x:Key="Settings_StartWithWindows">Khởi động cùng Windows (thu nhỏ vào khay hệ thống)</sys:String>
     <sys:String x:Key="Btn_SaveSettings">Lưu cài đặt</sys:String>
     <sys:String x:Key="Btn_Close">Đóng</sys:String>
 

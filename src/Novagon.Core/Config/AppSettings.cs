@@ -11,6 +11,7 @@ public class AppSettings
     public string Language { get; set; } = "vi";
     public string DefaultTld { get; set; } = "test";
     public bool AutoStartServices { get; set; } = false;
+    public bool StartWithWindows { get; set; } = false;
 
     public static AppSettings Load()
     {

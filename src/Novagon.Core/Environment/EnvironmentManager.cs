@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -29,11 +29,33 @@ public static class EnvironmentManager
             extraPaths.Add(Directory.Exists(mysqlBin) ? mysqlBin : currentMySqlDir);
         }
 
-        // ThÃªm thÆ° má»¥c bin/tools náº¿u cÃ³ (chá»©a composer.bat, v.v.)
+        // Thêm thư mục bin/tools nếu có
         string toolsDir = Path.Combine(AppDirectoryHelper.AppRoot, "bin", "tools");
         if (Directory.Exists(toolsDir))
         {
             extraPaths.Add(toolsDir);
+        }
+
+        // Thêm thư mục bin/composer nếu có (composer.bat, composer.phar)
+        string composerDir = Path.Combine(AppDirectoryHelper.AppRoot, "bin", "composer");
+        if (Directory.Exists(composerDir))
+        {
+            extraPaths.Add(composerDir);
+        }
+
+        // Thêm thư mục bin/nodejs nếu có (node.exe, npm, npx)
+        string nodeDir = Path.Combine(AppDirectoryHelper.AppRoot, "bin", "nodejs");
+        if (Directory.Exists(nodeDir))
+        {
+            var nodeSubs = Directory.GetDirectories(nodeDir);
+            if (nodeSubs.Length > 0)
+            {
+                foreach (var sub in nodeSubs) extraPaths.Add(sub);
+            }
+            else
+            {
+                extraPaths.Add(nodeDir);
+            }
         }
 
         string systemPath = System.Environment.GetEnvironmentVariable("PATH") ?? string.Empty;

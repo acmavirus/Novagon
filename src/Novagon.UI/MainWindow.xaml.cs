@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -20,19 +21,17 @@ namespace Novagon.UI;
 public partial class MainWindow : Window
 {
     private readonly ServiceManager _serviceManager;
-    private readonly PackageManager _packageManager;
-    private readonly QuickAppManager _quickAppManager;
+    private readonly PackageManager _packageManager = new();
+    private readonly QuickAppManager _quickAppManager = new();
     private bool _isExiting;
 
     public MainWindow()
     {
-        InitializeComponent();
-
         _serviceManager = new ServiceManager();
-        _packageManager = new PackageManager();
-        _quickAppManager = new QuickAppManager();
         _serviceManager.OnLogReceived += OnLogReceived;
         _serviceManager.OnStateChanged += OnStateChanged;
+
+        InitializeComponent();
 
         LocalizationManager.LanguageChanged += OnLanguageChanged;
 
@@ -109,6 +108,10 @@ public partial class MainWindow : Window
     private void LoadRuntimes()
     {
         var phps = _serviceManager.Scanner.GetInstalledPackages("php");
+        if (_serviceManager.ActivePhp != null && !phps.Any(p => p.RootPath == _serviceManager.ActivePhp.RootPath))
+        {
+            _serviceManager.ActivePhp = phps.Count > 0 ? phps[0] : null;
+        }
         CmbPhpVersions.ItemsSource = phps;
         CmbPhpVersions.DisplayMemberPath = "Name";
         if (phps.Count > 0)
@@ -122,6 +125,10 @@ public partial class MainWindow : Window
         }
 
         var mysqls = _serviceManager.Scanner.GetInstalledPackages("mysql");
+        if (_serviceManager.ActiveMySql != null && !mysqls.Any(p => p.RootPath == _serviceManager.ActiveMySql.RootPath))
+        {
+            _serviceManager.ActiveMySql = mysqls.Count > 0 ? mysqls[0] : null;
+        }
         CmbMySqlVersions.ItemsSource = mysqls;
         CmbMySqlVersions.DisplayMemberPath = "Name";
         if (mysqls.Count > 0)
@@ -274,6 +281,25 @@ public partial class MainWindow : Window
     private void BtnDatabase_Click(object sender, RoutedEventArgs e)
     {
         string url = "http://127.0.0.1/phpmyadmin";
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = url,
+                UseShellExecute = true
+            });
+        }
+        catch (Exception ex)
+        {
+            string errMsg = string.Format(LocalizationManager.GetString("Msg_BrowserError", "Không thể mở trình duyệt: {0}"), ex.Message);
+            string errTitle = LocalizationManager.GetString("Msg_ErrorTitle", "Lỗi");
+            MessageBox.Show(errMsg, errTitle, MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+    }
+
+    private void BtnMailpit_Click(object sender, RoutedEventArgs e)
+    {
+        string url = "http://127.0.0.1:8025";
         try
         {
             Process.Start(new ProcessStartInfo
@@ -543,6 +569,55 @@ public partial class MainWindow : Window
         }
     }
 
+    private void BtnOpenProjectFolder_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is string projectPath && Directory.Exists(projectPath))
+        {
+            try
+            {
+                Process.Start("explorer.exe", projectPath);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, LocalizationManager.GetString("Msg_ErrorTitle", "Lỗi"), MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+    }
+
+    private void BtnOpenVsCode_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is string projectPath && Directory.Exists(projectPath))
+        {
+            try
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = $"/c code \"{projectPath}\"",
+                    CreateNoWindow = true,
+                    UseShellExecute = false
+                };
+                Process.Start(psi);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, LocalizationManager.GetString("Msg_ErrorTitle", "Lỗi"), MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+        }
+    }
+
+    private void BtnOpenProjectTerminal_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is string projectPath && Directory.Exists(projectPath))
+        {
+            EnvironmentManager.OpenTerminal(
+                _serviceManager.ActivePhp?.RootPath,
+                _serviceManager.ActiveMySql?.RootPath,
+                projectPath
+            );
+        }
+    }
+
     private async void BtnDeleteProject_Click(object sender, RoutedEventArgs e)
     {
         if (sender is Button btn && btn.Tag is ProjectInfo project)
@@ -726,8 +801,23 @@ public partial class MainWindow : Window
         catch { }
     }
 
+    private string _currentPackageFilter = "all";
+
+    private void CmbPkgCategoryFilter_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (CmbPkgCategoryFilter?.SelectedItem is ComboBoxItem item && item.Tag is string tag)
+        {
+            _currentPackageFilter = tag;
+            if (_packageManager != null && ListPackages != null)
+            {
+                RefreshPackageList();
+            }
+        }
+    }
+
     private void RefreshPackageList()
     {
+        if (_packageManager == null || ListPackages == null) return;
         bool isEn = LocalizationManager.CurrentLanguage == "en";
         var packages = _packageManager.GetAvailablePackages();
         foreach (var p in packages)
@@ -737,7 +827,8 @@ public partial class MainWindow : Window
                 p.DisplayName = p.DisplayName
                     .Replace("(Khuyến nghị, NTS x64)", "(Recommended, NTS x64)")
                     .Replace("(LTS ổn định, NTS x64)", "(LTS Stable, NTS x64)")
-                    .Replace("(Tương thích MySQL 8.0, x64)", "(MySQL 8.0 Compatible, x64)");
+                    .Replace("(Tương thích MySQL 8.0, x64)", "(MySQL 8.0 Compatible, x64)")
+                    .Replace("(với npm & npx)", "(with npm & npx)");
                 p.CustomActionText = p.IsInstalled ? "✓ Installed" : "Download (1-Click)";
             }
             else
@@ -745,6 +836,12 @@ public partial class MainWindow : Window
                 p.CustomActionText = p.IsInstalled ? "✓ Đã cài đặt" : "Tải về (1-Click)";
             }
         }
+
+        if (_currentPackageFilter != "all")
+        {
+            packages = packages.Where(p => p.Category.Equals(_currentPackageFilter, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+
         ListPackages.ItemsSource = packages;
     }
 
@@ -776,6 +873,75 @@ public partial class MainWindow : Window
             {
                 TxtDownloadStatus.Text = $"✗ " + result.Message;
                 btn.IsEnabled = true;
+            }
+        }
+    }
+
+    private void BtnUninstallPackage_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is Button btn && btn.Tag is AvailablePackage pkg)
+        {
+            // Kiểm tra dịch vụ có đang chạy liên quan đến gói này không
+            if (_serviceManager.IsRunning)
+            {
+                bool isConflict = false;
+                if (pkg.Category == "php" && _serviceManager.PhpStatus == ProcessStatus.Running &&
+                    _serviceManager.ActivePhp?.RootPath.Contains(pkg.TargetFolderName, StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    isConflict = true;
+                }
+                else if (pkg.Category == "mysql" && _serviceManager.MySqlStatus == ProcessStatus.Running)
+                {
+                    isConflict = true;
+                }
+                else if (pkg.Category == "redis" && _serviceManager.RedisStatus == ProcessStatus.Running)
+                {
+                    isConflict = true;
+                }
+                else if (pkg.TargetFolderName == "mailpit" && _serviceManager.MailpitStatus == ProcessStatus.Running)
+                {
+                    isConflict = true;
+                }
+
+                if (isConflict)
+                {
+                    MessageBox.Show(
+                        LocalizationManager.GetString("Msg_StopServiceBeforeUninstall", "Vui lòng bấm 'Dừng' (Stop All) các dịch vụ trước khi gỡ cài đặt phiên bản đang hoạt động!"),
+                        LocalizationManager.GetString("Msg_UninstallTitle", "Xác nhận gỡ cài đặt"),
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Warning);
+                    return;
+                }
+            }
+
+            string confirmMsg = string.Format(
+                LocalizationManager.GetString("Msg_ConfirmUninstallPkg", "Bạn có chắc chắn muốn gỡ cài đặt gói '{0}'?\n\nThao tác này sẽ xóa các tệp thực thi của gói khỏi thư mục bin/."),
+                pkg.DisplayName);
+            string title = LocalizationManager.GetString("Msg_UninstallTitle", "Xác nhận gỡ cài đặt");
+
+            if (MessageBox.Show(confirmMsg, title, MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
+            {
+                return;
+            }
+
+            bool ok = _packageManager.UninstallPackage(pkg);
+            if (ok)
+            {
+                TxtDownloadStatus.Text = $"✓ " + string.Format(
+                    LocalizationManager.GetString("Msg_UninstallSuccess", "Đã gỡ cài đặt '{0}' thành công!"),
+                    pkg.DisplayName);
+                PnlDownloadProgress.Visibility = Visibility.Visible;
+                PbDownload.Value = 100;
+                LoadRuntimes();
+                RefreshPackageList();
+            }
+            else
+            {
+                MessageBox.Show(
+                    LocalizationManager.GetString("Msg_UninstallError", "Không thể gỡ cài đặt gói. Tệp có thể đang được sử dụng bởi tiến trình khác."),
+                    title,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
             }
         }
     }

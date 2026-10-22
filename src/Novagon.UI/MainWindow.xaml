@@ -3,14 +3,17 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:tb="http://www.hardcodet.net/taskbar"
         Title="{DynamicResource App_Title}"
-        Height="570" Width="870"
-        MinHeight="480" MinWidth="820"
+        Height="570" Width="920"
+        MinHeight="480" MinWidth="860"
         WindowStartupLocation="CenterScreen"
         Background="#f1f5f9"
         Foreground="#1e293b"
         FontFamily="Segoe UI">
 
     <Window.Resources>
+        <!-- Boolean to Visibility Converter -->
+        <BooleanToVisibilityConverter x:Key="BoolToVis"/>
+
         <!-- 1. Normal Action Button (Reload, Terminal, Root www, Xóa Logs) -->
         <Style x:Key="ActionButton" TargetType="Button">
             <Setter Property="Background" Value="#ffffff"/>
@@ -312,6 +315,39 @@
             </Setter>
         </Style>
 
+        <!-- Neutral Mini Action Button (Slate / Gray) -->
+        <Style x:Key="NeutralMiniButton" TargetType="Button">
+            <Setter Property="Background" Value="#f1f5f9"/>
+            <Setter Property="Foreground" Value="#0f172a"/>
+            <Setter Property="BorderBrush" Value="#cbd5e1"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="9,3"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="3" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#e2e8f0"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="#94a3b8"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="#cbd5e1"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- Settings Icon Button Style -->
         <Style x:Key="SettingsIconButton" TargetType="Button">
             <Setter Property="Background" Value="#ffffff"/>
@@ -384,6 +420,7 @@
                     <MenuItem Header="{DynamicResource Btn_ReloadVHosts}" Click="BtnReload_Click"/>
                     <Separator/>
                     <MenuItem Header="{DynamicResource Tray_Db}" Click="BtnDatabase_Click"/>
+                    <MenuItem Header="{DynamicResource Tray_Mailpit}" Click="BtnMailpit_Click"/>
                     <MenuItem Header="{DynamicResource Tray_Terminal}" Click="BtnTerminal_Click"/>
                     <MenuItem Header="{DynamicResource Tray_RootWww}" Click="BtnOpenWww_Click"/>
                     <MenuItem Header="{DynamicResource Tray_Settings}" Click="MenuSettings_Click"/>
@@ -427,6 +464,7 @@
             <Button x:Name="BtnStopAll" Content="{DynamicResource Btn_StopAll}" Style="{StaticResource StopButton}" Click="BtnStopAll_Click" IsEnabled="False" Padding="16,8"/>
             <Button x:Name="BtnReload" Content="{DynamicResource Btn_ReloadVHosts}" Style="{StaticResource ActionButton}" Click="BtnReload_Click"/>
             <Button x:Name="BtnDatabase" Content="{DynamicResource Btn_Database}" Style="{StaticResource ActionButton}" Click="BtnDatabase_Click"/>
+            <Button x:Name="BtnMailpit" Content="Mailpit" Style="{StaticResource ActionButton}" Click="BtnMailpit_Click" ToolTip="Mailpit (127.0.0.1:8025)"/>
             <Button x:Name="BtnTerminal" Content="{DynamicResource Btn_Terminal}" Style="{StaticResource ActionButton}" Click="BtnTerminal_Click"/>
             <Button x:Name="BtnOpenWww" Content="{DynamicResource Btn_RootWww}" Style="{StaticResource ActionButton}" Click="BtnOpenWww_Click"/>
         </StackPanel>
@@ -539,16 +577,27 @@
                               BorderThickness="1" BorderBrush="#94a3b8">
                         <ListView.View>
                             <GridView>
-                                <GridViewColumn Header="{DynamicResource Col_Domain}" Width="200" DisplayMemberBinding="{Binding Domain}"/>
-                                <GridViewColumn Header="{DynamicResource Col_DocRoot}" Width="360" DisplayMemberBinding="{Binding DocumentRoot}"/>
-                                <GridViewColumn Header="{DynamicResource Col_Actions}" Width="140">
+                                <GridViewColumn Header="{DynamicResource Col_Domain}" Width="170" DisplayMemberBinding="{Binding Domain}"/>
+                                <GridViewColumn Header="{DynamicResource Col_DocRoot}" Width="280" DisplayMemberBinding="{Binding DocumentRoot}"/>
+                                <GridViewColumn Header="{DynamicResource Col_Actions}" Width="340">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
                                             <StackPanel Orientation="Horizontal">
                                                 <Button Content="{DynamicResource Btn_OpenWebsite}" Style="{StaticResource PrimaryMiniButton}"
-                                                        Click="BtnOpenDomain_Click" Tag="{Binding Domain}" Margin="0,0,6,0"/>
+                                                        Click="BtnOpenDomain_Click" Tag="{Binding Domain}" Margin="0,0,5,0"
+                                                        ToolTip="{DynamicResource Tooltip_OpenBrowser}"/>
+                                                <Button Content="{DynamicResource Btn_OpenFolder}" Style="{StaticResource NeutralMiniButton}"
+                                                        Click="BtnOpenProjectFolder_Click" Tag="{Binding ProjectPath}" Margin="0,0,5,0"
+                                                        ToolTip="{DynamicResource Tooltip_OpenFolder}"/>
+                                                <Button Content="{DynamicResource Btn_OpenVsCode}" Style="{StaticResource NeutralMiniButton}"
+                                                        Click="BtnOpenVsCode_Click" Tag="{Binding ProjectPath}" Margin="0,0,5,0"
+                                                        ToolTip="{DynamicResource Tooltip_OpenVsCode}"/>
+                                                <Button Content="{DynamicResource Btn_OpenTerminal}" Style="{StaticResource NeutralMiniButton}"
+                                                        Click="BtnOpenProjectTerminal_Click" Tag="{Binding ProjectPath}" Margin="0,0,5,0"
+                                                        ToolTip="{DynamicResource Tooltip_OpenTerminal}"/>
                                                 <Button Content="{DynamicResource Btn_DeleteProject}" Style="{StaticResource DangerMiniButton}"
-                                                        Click="BtnDeleteProject_Click" Tag="{Binding}"/>
+                                                        Click="BtnDeleteProject_Click" Tag="{Binding}"
+                                                        ToolTip="{DynamicResource Tooltip_DeleteProject}"/>
                                             </StackPanel>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
@@ -734,22 +783,59 @@
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <TextBlock Text="{DynamicResource Lbl_HubTitle}"
-                               FontSize="12" FontWeight="SemiBold" Foreground="#1e293b" Margin="0,0,0,8"/>
+                    <Grid Grid.Row="0" Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Text="{DynamicResource Lbl_HubTitle}"
+                                   FontSize="12" FontWeight="SemiBold" Foreground="#1e293b" VerticalAlignment="Center" Margin="0,0,12,0"/>
+
+                        <!-- Category Filter Dropdown -->
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="{DynamicResource Lbl_FilterCategory}" FontSize="12" FontWeight="Bold" Foreground="#475569" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                            <ComboBox x:Name="CmbPkgCategoryFilter" Width="170" Height="28" FontSize="12" FontWeight="SemiBold"
+                                      SelectionChanged="CmbPkgCategoryFilter_SelectionChanged">
+                                <ComboBoxItem Content="{DynamicResource Filter_All}" Tag="all" IsSelected="True"/>
+                                <ComboBoxItem Content="PHP" Tag="php"/>
+                                <ComboBoxItem Content="MySQL / MariaDB" Tag="mysql"/>
+                                <ComboBoxItem Content="Redis" Tag="redis"/>
+                                <ComboBoxItem Content="Node.js" Tag="nodejs"/>
+                                <ComboBoxItem Content="{DynamicResource Filter_Tools}" Tag="tools"/>
+                            </ComboBox>
+                        </StackPanel>
+                    </Grid>
 
                     <ListView x:Name="ListPackages" Grid.Row="1" Background="#ffffff" Foreground="#0f172a"
                               BorderThickness="1" BorderBrush="#94a3b8">
                         <ListView.View>
                             <GridView>
                                 <GridViewColumn Header="{DynamicResource Col_PkgName}" Width="310" DisplayMemberBinding="{Binding DisplayName}"/>
-                                <GridViewColumn Header="{DynamicResource Col_PkgCat}" Width="80" DisplayMemberBinding="{Binding Category}"/>
-                                <GridViewColumn Header="{DynamicResource Col_PkgSize}" Width="90" DisplayMemberBinding="{Binding SizeDescription}"/>
-                                <GridViewColumn Header="{DynamicResource Col_Actions}" Width="130">
+                                <GridViewColumn Header="{DynamicResource Col_PkgCat}" Width="75" DisplayMemberBinding="{Binding Category}"/>
+                                <GridViewColumn Header="{DynamicResource Col_PkgSize}" Width="85" DisplayMemberBinding="{Binding SizeDescription}"/>
+                                <GridViewColumn Header="{DynamicResource Col_Actions}" Width="210">
                                     <GridViewColumn.CellTemplate>
                                         <DataTemplate>
-                                            <Button Content="{Binding ActionText}" IsEnabled="{Binding CanInstall}"
-                                                    Style="{StaticResource PrimaryMiniButton}"
-                                                    Click="BtnDownloadPackage_Click" Tag="{Binding}"/>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <!-- Khi CHƯA cài đặt: Hiển thị nút Tải về (1-Click) -->
+                                                <Button Content="{Binding ActionText}"
+                                                        Visibility="{Binding CanInstall, Converter={StaticResource BoolToVis}}"
+                                                        Style="{StaticResource PrimaryMiniButton}"
+                                                        Click="BtnDownloadPackage_Click" Tag="{Binding}"/>
+
+                                                <!-- Khi ĐÃ cài đặt: Badge Đã cài đặt + Nút Gỡ cài đặt -->
+                                                <StackPanel Orientation="Horizontal"
+                                                            Visibility="{Binding IsInstalled, Converter={StaticResource BoolToVis}}">
+                                                    <Border Background="#f1f5f9" BorderBrush="#cbd5e1" BorderThickness="1" CornerRadius="3" Padding="6,2" Margin="0,0,6,0" VerticalAlignment="Center">
+                                                        <TextBlock Text="{DynamicResource Status_Installed_Badge}" FontSize="11" FontWeight="Bold" Foreground="#15803d"/>
+                                                    </Border>
+                                                    <Button Content="{DynamicResource Btn_UninstallPkg}"
+                                                            Style="{StaticResource DangerMiniButton}"
+                                                            Click="BtnUninstallPackage_Click" Tag="{Binding}"
+                                                            ToolTip="{DynamicResource Tooltip_UninstallPkg}"/>
+                                                </StackPanel>
+                                            </StackPanel>
                                         </DataTemplate>
                                     </GridViewColumn.CellTemplate>
                                 </GridViewColumn>

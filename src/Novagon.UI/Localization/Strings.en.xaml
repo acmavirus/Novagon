@@ -47,9 +47,16 @@
     <sys:String x:Key="Col_Domain">Domain</sys:String>
     <sys:String x:Key="Col_DocRoot">Document Root</sys:String>
     <sys:String x:Key="Col_Actions">Actions</sys:String>
-    <sys:String x:Key="Btn_OpenWebsite">Open</sys:String>
+    <sys:String x:Key="Btn_OpenWebsite">Open Web</sys:String>
     <sys:String x:Key="Btn_OpenFolder">Folder</sys:String>
+    <sys:String x:Key="Btn_OpenVsCode">VS Code</sys:String>
+    <sys:String x:Key="Btn_OpenTerminal">Terminal</sys:String>
     <sys:String x:Key="Btn_DeleteProject">Delete</sys:String>
+    <sys:String x:Key="Tooltip_OpenBrowser">Open website in web browser</sys:String>
+    <sys:String x:Key="Tooltip_OpenFolder">Open project folder in File Explorer</sys:String>
+    <sys:String x:Key="Tooltip_OpenVsCode">Open project in Visual Studio Code</sys:String>
+    <sys:String x:Key="Tooltip_OpenTerminal">Open Terminal at project directory</sys:String>
+    <sys:String x:Key="Tooltip_DeleteProject">Delete project and Virtual Host</sys:String>
     <sys:String x:Key="Empty_VHosts">No projects found in www/. Create a project in the 'Quick App' tab or add a folder in www/.</sys:String>
 
     <!-- Tab 2: Quick App Creation -->
@@ -88,11 +95,22 @@
     <sys:String x:Key="Lbl_PhpExtTitle">PHP Extension Manager (Click to toggle in php.ini):</sys:String>
 
     <!-- Tab 4: Hub Downloads -->
-    <sys:String x:Key="Lbl_HubTitle">Automatically download and install PHP, MySQL, Redis versions (1-Click, no manual zip config):</sys:String>
+    <sys:String x:Key="Lbl_HubTitle">Auto-install packages for PHP, MySQL, Redis, Node.js, Tools:</sys:String>
+    <sys:String x:Key="Lbl_FilterCategory">Filter Category:</sys:String>
+    <sys:String x:Key="Filter_All">All Categories</sys:String>
+    <sys:String x:Key="Filter_Tools">Tools</sys:String>
+    <sys:String x:Key="Status_Installed_Badge">✓ Installed</sys:String>
+    <sys:String x:Key="Btn_UninstallPkg">Uninstall</sys:String>
+    <sys:String x:Key="Tooltip_UninstallPkg">Uninstall and remove this package from bin/</sys:String>
     <sys:String x:Key="Col_PkgName">Runtime Package</sys:String>
     <sys:String x:Key="Col_PkgCat">Category</sys:String>
     <sys:String x:Key="Col_PkgSize">Size</sys:String>
     <sys:String x:Key="Btn_InstallNow">Download &amp; Install</sys:String>
+    <sys:String x:Key="Msg_ConfirmUninstallPkg">Are you sure you want to uninstall '{0}'?&#x0a;&#x0a;This will remove the package binaries from bin/.</sys:String>
+    <sys:String x:Key="Msg_UninstallTitle">Confirm Uninstall</sys:String>
+    <sys:String x:Key="Msg_UninstallSuccess">'{0}' uninstalled successfully!</sys:String>
+    <sys:String x:Key="Msg_UninstallError">Could not uninstall package. Files may be in use by another process.</sys:String>
+    <sys:String x:Key="Msg_StopServiceBeforeUninstall">Please stop services (Stop All) before uninstalling the currently active version!</sys:String>
 
     <!-- Tab 5: Logs -->
     <sys:String x:Key="Btn_ClearLogs">Clear Logs</sys:String>
@@ -103,6 +121,7 @@
     <sys:String x:Key="Tray_StopAll">Stop All Services</sys:String>
     <sys:String x:Key="Tray_ReloadVHosts">Reload Virtual Hosts</sys:String>
     <sys:String x:Key="Tray_Db">Database (phpMyAdmin)</sys:String>
+    <sys:String x:Key="Tray_Mailpit">View Emails (Mailpit)</sys:String>
     <sys:String x:Key="Tray_Terminal">Command Line (Terminal)</sys:String>
     <sys:String x:Key="Tray_RootWww">Root Directory (www)</sys:String>
     <sys:String x:Key="Tray_Settings">Settings...</sys:String>
@@ -117,6 +136,7 @@
     <sys:String x:Key="Settings_Tld">Default Virtual Host TLD:</sys:String>
     <sys:String x:Key="Settings_TldHint">Default: test (generates: project-name.test)</sys:String>
     <sys:String x:Key="Settings_AutoStart">Automatically start all services on Novagon launch</sys:String>
+    <sys:String x:Key="Settings_StartWithWindows">Start Novagon when Windows starts (minimized to tray)</sys:String>
     <sys:String x:Key="Btn_SaveSettings">Save Settings</sys:String>
     <sys:String x:Key="Btn_Close">Close</sys:String>
 

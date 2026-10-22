@@ -23,6 +23,7 @@ public class ServiceManager : IDisposable
     private ProcessRunner? _phpRunner;
     private ProcessRunner? _mysqlRunner;
     private ProcessRunner? _redisRunner;
+    private ProcessRunner? _mailpitRunner;
 
     public RuntimePackage? ActiveRedis { get; set; }
 
@@ -30,8 +31,9 @@ public class ServiceManager : IDisposable
     public ProcessStatus PhpStatus => _phpRunner?.Status ?? ProcessStatus.Stopped;
     public ProcessStatus MySqlStatus => _mysqlRunner?.Status ?? ProcessStatus.Stopped;
     public ProcessStatus RedisStatus => _redisRunner?.Status ?? ProcessStatus.Stopped;
+    public ProcessStatus MailpitStatus => _mailpitRunner?.Status ?? ProcessStatus.Stopped;
 
-    public bool IsRunning => WebStatus == ProcessStatus.Running || PhpStatus == ProcessStatus.Running || MySqlStatus == ProcessStatus.Running || RedisStatus == ProcessStatus.Running;
+    public bool IsRunning => WebStatus == ProcessStatus.Running || PhpStatus == ProcessStatus.Running || MySqlStatus == ProcessStatus.Running || RedisStatus == ProcessStatus.Running || MailpitStatus == ProcessStatus.Running;
 
     public event Action<string, string>? OnLogReceived;
     public event Action? OnStateChanged;
@@ -222,6 +224,20 @@ max_allowed_packet=64M
             Log("Redis", $"Khởi động {ActiveRedis.Name} trên cổng 6379.");
         }
 
+        // 8. Khởi động Mailpit (nếu có trong bin/tools/mailpit/mailpit.exe)
+        string mailpitExe = GetMailpitPath();
+        if (File.Exists(mailpitExe))
+        {
+            string mailpitDir = Path.GetDirectoryName(mailpitExe)!;
+            string mailpitArgs = "--smtp-addr 127.0.0.1:1025 --listen 127.0.0.1:8025";
+            _mailpitRunner = new ProcessRunner("Mailpit", mailpitExe, mailpitArgs, mailpitDir);
+            _mailpitRunner.OutputDataReceived += msg => Log("Mailpit", msg);
+            _mailpitRunner.ErrorDataReceived += msg => Log("Mailpit", msg);
+            _mailpitRunner.StatusChanged += _ => OnStateChanged?.Invoke();
+            _mailpitRunner.Start();
+            Log("Mailpit", "Khởi động Mailpit (SMTP: 127.0.0.1:1025, Web UI: http://127.0.0.1:8025).");
+        }
+
         OnStateChanged?.Invoke();
         return (true, "Đã khởi động các dịch vụ hoàn tất.");
     }
@@ -262,16 +278,19 @@ max_allowed_packet=64M
             _phpRunner?.Stop();
             _mysqlRunner?.Stop();
             _redisRunner?.Stop();
+            _mailpitRunner?.Stop();
 
             try { _webRunner?.Dispose(); } catch { }
             try { _phpRunner?.Dispose(); } catch { }
             try { _mysqlRunner?.Dispose(); } catch { }
             try { _redisRunner?.Dispose(); } catch { }
+            try { _mailpitRunner?.Dispose(); } catch { }
 
             _webRunner = null;
             _phpRunner = null;
             _mysqlRunner = null;
             _redisRunner = null;
+            _mailpitRunner = null;
 
             Log("System", "Toàn bộ dịch vụ đã dừng.");
             try
@@ -323,5 +342,10 @@ max_allowed_packet=64M
     {
         StopAll();
         GC.SuppressFinalize(this);
+    }
+
+    public static string GetMailpitPath()
+    {
+        return Path.Combine(AppDirectoryHelper.AppRoot, "bin", "tools", "mailpit", "mailpit.exe");
     }
 }

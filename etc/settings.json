@@ -1,5 +1,6 @@
 {
-  "Language": "en",
+  "Language": "vi",
   "DefaultTld": "test",
-  "AutoStartServices": false
+  "AutoStartServices": true,
+  "StartWithWindows": false
 }

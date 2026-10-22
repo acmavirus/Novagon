@@ -26,9 +26,10 @@ public partial class SettingsWindow : Window
             CmbLanguage.SelectedItem = OptLangVi;
         }
 
-        // TLD & AutoStart
+        // TLD, AutoStart & StartWithWindows
         TxtTld.Text = _settings.DefaultTld;
         ChkAutoStart.IsChecked = _settings.AutoStartServices;
+        ChkStartWithWindows.IsChecked = _settings.StartWithWindows;
     }
 
     private void BtnSave_Click(object sender, RoutedEventArgs e)
@@ -48,12 +49,43 @@ public partial class SettingsWindow : Window
         _settings.DefaultTld = tld;
         _settings.AutoStartServices = ChkAutoStart.IsChecked ?? false;
 
+        // 3. Khởi động cùng Windows
+        bool startWithWin = ChkStartWithWindows.IsChecked ?? false;
+        _settings.StartWithWindows = startWithWin;
+        ApplyStartWithWindows(startWithWin);
+
         _settings.Save();
 
-        // 3. Chuyển đổi ngôn ngữ giao diện ngay lập tức
+        // 4. Chuyển đổi ngôn ngữ giao diện ngay lập tức
         LocalizationManager.SetLanguage(selectedLang, saveSettings: false);
 
         Close();
+    }
+
+    private static void ApplyStartWithWindows(bool enable)
+    {
+        try
+        {
+            const string runKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
+            const string appName = "Novagon";
+            using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(runKey, true);
+            if (key != null)
+            {
+                if (enable)
+                {
+                    string? exePath = System.Environment.ProcessPath;
+                    if (!string.IsNullOrEmpty(exePath))
+                    {
+                        key.SetValue(appName, $"\"{exePath}\"");
+                    }
+                }
+                else
+                {
+                    key.DeleteValue(appName, false);
+                }
+            }
+        }
+        catch { }
     }
 
     private void BtnClose_Click(object sender, RoutedEventArgs e)
