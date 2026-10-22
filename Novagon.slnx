@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Novagon.Core/Novagon.Core.csproj" />
+    <Project Path="src/Novagon.UI/Novagon.UI.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Novagon.Tests/Novagon.Tests.csproj" />
+  </Folder>
+</Solution>

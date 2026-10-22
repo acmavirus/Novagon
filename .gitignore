@@ -1,0 +1,93 @@
+# =============================================================================
+# NOVAGON - .gitignore (Bảo mật cho Public Repository)
+# =============================================================================
+
+# 1. BẢO MẬT & CHỨNG CHỈ SỐ (CREDENTIALS & SSL)
+# -----------------------------------------------------------------------------
+etc/ssl/*.key
+etc/ssl/*.crt
+etc/ssl/*.pem
+etc/ssl/*.pfx
+etc/ssl/*.csr
+*.key
+*.pem
+*.pfx
+*.crt
+
+# Các file biến môi trường & bí mật
+.env
+.env.*
+!.env.example
+*.local
+
+# Cơ sở dữ liệu và sao lưu cục bộ
+backups/
+*.bak
+*.backup
+*.dump
+*.sql
+*.sqlite
+*.sqlite3
+*.db
+
+# 2. RUNTIME BINARIES & DỮ LIỆU NGƯỜI DÙNG (PORTABLE RUNTIMES)
+# -----------------------------------------------------------------------------
+# Toàn bộ binary PHP, MySQL (MariaDB data), Nginx, Composer (cài qua setup-runtimes.ps1)
+bin/
+/bin/
+
+# Thư mục chứa các website cá nhân của người dùng
+www/*
+!www/.gitkeep
+
+# Thư mục ứng dụng bên thứ 3 & Cache tải về
+etc/apps/*
+!etc/apps/.gitkeep
+etc/cache/*
+!etc/cache/.gitkeep
+
+# Gói nén dung lượng lớn
+*.zip
+*.tar.gz
+*.7z
+*.rar
+
+# Các cấu hình Virtual Host tự động sinh động
+etc/nginx/sites-enabled/*
+!etc/nginx/sites-enabled/.gitkeep
+
+# 3. NHẬT KÝ & TIẾN TRÌNH (LOGS & PIDS)
+# -----------------------------------------------------------------------------
+logs/*
+!logs/.gitkeep
+*.log
+crash.log
+*.pid
+
+# 4. .NET & IDE BUILD ARTIFACTS
+# -----------------------------------------------------------------------------
+# Thư mục build
+[Bb]in/
+[Oo]bj/
+*.exe
+*.dll
+*.pdb
+*.msi
+*.nupkg
+
+# Visual Studio / Rider / VS Code cache
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*_wpftmp.csproj
+project.lock.json
+project.assets.json
+
+# Hệ điều hành
+Thumbs.db
+Desktop.ini
+.DS_Store
