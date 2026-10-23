@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -18,7 +18,7 @@ public record ProjectInfo(
 /// </summary>
 public class VHostGenerator
 {
-    public string WwwDirectory { get; }
+    public string WwwDirectory { get; set; }
     public string Tld { get; set; } = "test";
     public string NginxSitesEnabledDir { get; }
 
@@ -49,15 +49,18 @@ public class VHostGenerator
 
             string domain = $"{dirName.ToLowerInvariant()}.{Tld}";
 
-            // Tá»± Ä‘á»™ng nháº­n diá»‡n thÆ° má»¥c public (Laravel/Symfony) hoáº·c dist
+            // Tự động nhận diện thư mục public (Laravel/Symfony) hoặc dist/build khi thực sự có file index
             string docRoot = dir;
             string publicDir = Path.Combine(dir, "public");
             string distDir = Path.Combine(dir, "dist");
+            string buildDir = Path.Combine(dir, "build");
 
-            if (Directory.Exists(publicDir))
+            if (Directory.Exists(publicDir) && (File.Exists(Path.Combine(publicDir, "index.php")) || File.Exists(Path.Combine(publicDir, "index.html"))))
                 docRoot = publicDir;
-            else if (Directory.Exists(distDir))
+            else if (Directory.Exists(distDir) && (File.Exists(Path.Combine(distDir, "index.html")) || File.Exists(Path.Combine(distDir, "index.php"))))
                 docRoot = distDir;
+            else if (Directory.Exists(buildDir) && (File.Exists(Path.Combine(buildDir, "index.html")) || File.Exists(Path.Combine(buildDir, "index.php"))))
+                docRoot = buildDir;
 
             projects.Add(new ProjectInfo(dirName, domain, dir, docRoot));
         }
@@ -68,7 +71,7 @@ public class VHostGenerator
     /// <summary>
     /// Táº¡o cáº¥u hÃ¬nh Nginx VirtualHost vÃ  cáº­p nháº­t file hosts cho táº¥t cáº£ dá»± Ã¡n.
     /// </summary>
-    public void GenerateAll(string sslCertPath, string sslKeyPath, int phpFastCgiPort = 9000)
+    public void GenerateAll(string sslCertPath, string sslKeyPath, int phpFastCgiPort = 9054)
     {
         var projects = ScanProjects();
         Directory.CreateDirectory(NginxSitesEnabledDir);
@@ -98,6 +101,9 @@ public class VHostGenerator
 
     root ""{normWww}"";
     index index.php index.html index.htm;
+    autoindex on;
+    autoindex_exact_size off;
+    autoindex_localtime on;
 
     ssl_certificate ""{normCert}"";
     ssl_certificate_key ""{normKey}"";
@@ -178,6 +184,9 @@ public class VHostGenerator
 
     root ""{normRoot}"";
     index index.php index.html index.htm;
+    autoindex on;
+    autoindex_exact_size off;
+    autoindex_localtime on;
 
     ssl_certificate ""{normCert}"";
     ssl_certificate_key ""{normKey}"";

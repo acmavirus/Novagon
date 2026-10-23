@@ -7,9 +7,9 @@ using System.Security.Cryptography.X509Certificates;
 namespace Novagon.Core.Ssl;
 
 /// <summary>
-/// Quáº£n lÃ½ chá»©ng chá»‰ SSL cá»¥c bá»™ tá»± kÃ½ chuáº©n xÃ¡c theo tiÃªu chuáº©n X.509.
-/// Tá»± Ä‘á»™ng táº¡o Root CA, cÃ i Ä‘áº·t vÃ o Windows Trusted Root Certification Authorities
-/// vÃ  cáº¥p chá»©ng chá»‰ Wildcard (*.test) cho Web Server (Nginx/Apache).
+/// Quản lý chứng chỉ SSL cục bộ tự ký chuẩn xác theo tiêu chuẩn X.509.
+/// Tự động tạo Root CA, cài đặt vào Windows Trusted Root Certification Authorities
+/// và cấp chứng chỉ Wildcard (*.test) cho Web Server (Nginx/Apache).
 /// </summary>
 public static class LocalSslManager
 {
@@ -18,6 +18,8 @@ public static class LocalSslManager
 
     public static string CertPath => Path.Combine(SslDir, "novagon.crt");
     public static string KeyPath => Path.Combine(SslDir, "novagon.key");
+    public static string CaCertPath => Path.Combine(SslDir, "ca.crt");
+    public static string CaKeyPath => Path.Combine(SslDir, "ca.key");
 
     public static bool EnsureCertificatesInstalled(bool installToWindowsTrustStore = true)
     {
@@ -25,13 +27,17 @@ public static class LocalSslManager
         {
             Directory.CreateDirectory(SslDir);
 
-            // Kiá»ƒm tra xem certificate Ä‘Ã£ tá»“n táº¡i trÃªn Ä‘Ä©a chÆ°a
-            if (File.Exists(CertPath) && File.Exists(KeyPath))
+            // Kiểm tra xem certificate đã tồn tại trên đĩa và hợp lệ chưa
+            if (File.Exists(CertPath) && File.Exists(KeyPath) && File.Exists(CaCertPath) && IsValidCertificate(CertPath))
             {
+                if (installToWindowsTrustStore && !IsCaInstalledInWindows())
+                {
+                    InstallRootCaToWindows(null, CaCertPath);
+                }
                 return true;
             }
 
-            // 1. Táº¡o Root CA
+            // 1. Tạo Root CA
             using var rootKey = RSA.Create(2048);
             var caReq = new CertificateRequest(
                 $"CN={CaCommonName}, O=Novagon Development, C=VN",
@@ -45,13 +51,18 @@ public static class LocalSslManager
             var now = DateTimeOffset.UtcNow;
             using var rootCert = caReq.CreateSelfSigned(now.AddDays(-1), now.AddYears(10));
 
-            // CÃ i Root CA vÃ o Windows Trust Store náº¿u Ä‘Æ°á»£c yÃªu cáº§u
+            // Xuất Root CA ra đĩa (ca.crt, ca.key)
+            string caPem = rootCert.ExportCertificatePem();
+            File.WriteAllText(CaCertPath, caPem);
+            File.WriteAllText(CaKeyPath, rootKey.ExportPkcs8PrivateKeyPem());
+
+            // Cài Root CA vào Windows Trust Store nếu được yêu cầu
             if (installToWindowsTrustStore)
             {
-                InstallRootCaToWindows(rootCert);
+                InstallRootCaToWindows(rootCert, CaCertPath);
             }
 
-            // 2. Táº¡o chá»©ng chá»‰ Wildcard cho *.test, localhost, 127.0.0.1
+            // 2. Tạo chứng chỉ Wildcard cho *.test, localhost, 127.0.0.1
             using var leafKey = RSA.Create(2048);
             var leafReq = new CertificateRequest(
                 "CN=*.test",
@@ -62,6 +73,7 @@ public static class LocalSslManager
             var sanBuilder = new SubjectAlternativeNameBuilder();
             sanBuilder.AddDnsName("*.test");
             sanBuilder.AddDnsName("localhost");
+            sanBuilder.AddDnsName("*.local");
             sanBuilder.AddIpAddress(IPAddress.Loopback);
 
             leafReq.CertificateExtensions.Add(sanBuilder.Build());
@@ -75,9 +87,20 @@ public static class LocalSslManager
             using var leafSigned = leafReq.Create(rootCert, now.AddDays(-1), now.AddYears(5), serial);
             using var leafWithKey = leafSigned.CopyWithPrivateKey(leafKey);
 
-            // Xuáº¥t ra file PEM (.crt vÃ  .key) cho Nginx vÃ  Apache
-            File.WriteAllText(CertPath, leafWithKey.ExportCertificatePem());
-            File.WriteAllText(KeyPath, leafKey.ExportPkcs8PrivateKeyPem());
+            // Xuất fullchain PEM (.crt và .key) cho Nginx và Apache
+            string fullChainPem = leafWithKey.ExportCertificatePem() + System.Environment.NewLine + caPem;
+            string leafKeyPem = leafKey.ExportPkcs8PrivateKeyPem();
+
+            File.WriteAllText(CertPath, fullChainPem);
+            File.WriteAllText(KeyPath, leafKeyPem);
+
+            // Đồng bộ sang laragon.crt/laragon.key nếu có cấu hình cũ
+            try
+            {
+                File.WriteAllText(Path.Combine(SslDir, "laragon.crt"), fullChainPem);
+                File.WriteAllText(Path.Combine(SslDir, "laragon.key"), leafKeyPem);
+            }
+            catch { }
 
             return true;
         }
@@ -87,23 +110,49 @@ public static class LocalSslManager
         }
     }
 
-    private static void InstallRootCaToWindows(X509Certificate2 rootCert)
+    private static bool IsValidCertificate(string certFile)
     {
         try
         {
-            using var store = new X509Store(StoreName.Root, StoreLocation.LocalMachine);
-            store.Open(OpenFlags.ReadWrite);
-
-            // Kiá»ƒm tra xem Ä‘Ã£ cÃ³ CA cÅ© chÆ°a
-            var existing = store.Certificates.Find(X509FindType.FindBySubjectName, CaCommonName, false);
-            if (existing.Count == 0)
-            {
-                store.Add(rootCert);
-            }
+            using var cert = X509CertificateLoader.LoadCertificateFromFile(certFile);
+            var now = DateTime.Now;
+            if (now < cert.NotBefore || now > cert.NotAfter) return false;
+            return true;
         }
         catch
         {
-            // Náº¿u khÃ´ng ghi Ä‘Æ°á»£c vÃ o LocalMachine (cáº§n quyá»n admin), thá»­ ghi vÃ o CurrentUser
+            return false;
+        }
+    }
+
+    private static bool IsCaInstalledInWindows()
+    {
+        try
+        {
+            using var userStore = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
+            userStore.Open(OpenFlags.ReadOnly);
+            var existingUser = userStore.Certificates.Find(X509FindType.FindBySubjectName, CaCommonName, false);
+            if (existingUser.Count > 0) return true;
+
+            using var lmStore = new X509Store(StoreName.Root, StoreLocation.LocalMachine);
+            lmStore.Open(OpenFlags.ReadOnly);
+            var existingLm = lmStore.Certificates.Find(X509FindType.FindBySubjectName, CaCommonName, false);
+            if (existingLm.Count > 0) return true;
+        }
+        catch { }
+
+        return false;
+    }
+
+    private static void InstallRootCaToWindows(X509Certificate2? rootCert, string caCertPath)
+    {
+        if (rootCert == null && File.Exists(caCertPath))
+        {
+            try { rootCert = X509CertificateLoader.LoadCertificateFromFile(caCertPath); } catch { }
+        }
+
+        if (rootCert != null)
+        {
             try
             {
                 using var userStore = new X509Store(StoreName.Root, StoreLocation.CurrentUser);
@@ -111,7 +160,32 @@ public static class LocalSslManager
                 userStore.Add(rootCert);
             }
             catch { }
+
+            try
+            {
+                using var lmStore = new X509Store(StoreName.Root, StoreLocation.LocalMachine);
+                lmStore.Open(OpenFlags.ReadWrite);
+                lmStore.Add(rootCert);
+            }
+            catch { }
         }
+
+        // Chạy certutil để đăng ký tin cậy vào Windows Root Certificate Authority
+        try
+        {
+            if (File.Exists(caCertPath))
+            {
+                var psi = new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = "certutil.exe",
+                    Arguments = $"-addstore -f \"Root\" \"{caCertPath}\"",
+                    CreateNoWindow = true,
+                    UseShellExecute = false
+                };
+                using var p = System.Diagnostics.Process.Start(psi);
+                p?.WaitForExit(3000);
+            }
+        }
+        catch { }
     }
 }
-

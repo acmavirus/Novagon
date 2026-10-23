@@ -12,15 +12,21 @@ namespace Novagon.Core.QuickApps;
 
 public class QuickAppManager
 {
-    private readonly string _wwwRoot;
+    private string _wwwRoot;
     private readonly string _cacheDir;
     private static readonly HttpClient HttpClient = new() { Timeout = TimeSpan.FromMinutes(5) };
+
+    public string WwwRoot
+    {
+        get => _wwwRoot;
+        set => _wwwRoot = value;
+    }
 
     public event Action<string>? OnLog;
 
     public QuickAppManager(string? wwwRoot = null)
     {
-        _wwwRoot = wwwRoot ?? Path.Combine(AppDirectoryHelper.AppRoot, "www");
+        _wwwRoot = wwwRoot ?? Novagon.Core.Config.AppSettings.Load().GetEffectiveRootDirectory();
         _cacheDir = Path.Combine(AppDirectoryHelper.AppRoot, "etc", "cache");
         Directory.CreateDirectory(_cacheDir);
     }

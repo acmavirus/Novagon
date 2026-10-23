@@ -133,6 +133,15 @@
     <sys:String x:Key="Settings_Language">Ngôn ngữ hiển thị (Language):</sys:String>
     <sys:String x:Key="Settings_Language_Vi">🇻🇳 Tiếng Việt (Vietnamese)</sys:String>
     <sys:String x:Key="Settings_Language_En">🇬🇧 English</sys:String>
+    <sys:String x:Key="Settings_RootDir">Thư mục Root dự án (Document Root):</sys:String>
+    <sys:String x:Key="Settings_RootDirHint">Nơi chứa mã nguồn các website. Khi chọn, hệ thống sẽ tự động đồng bộ Virtual Hosts và Nginx.</sys:String>
+    <sys:String x:Key="Settings_RootDirDefaultTooltip">Đặt lại thư mục mặc định (thư mục www)</sys:String>
+    <sys:String x:Key="Btn_BrowseFolder">Duyệt...</sys:String>
+    <sys:String x:Key="Btn_DefaultFolder">Mặc định</sys:String>
+    <sys:String x:Key="Dialog_SelectRootDirTitle">Chọn thư mục Root cho dự án từ ổ đĩa</sys:String>
+    <sys:String x:Key="Msg_RootDirUpdated">Đã chuyển đổi thư mục Root sang '{0}'! Virtual Hosts đã được đồng bộ tự động.</sys:String>
+    <sys:String x:Key="Menu_ChangeRootDir">Đổi thư mục Root từ ổ đĩa...</sys:String>
+    <sys:String x:Key="Tooltip_RootDir">Thư mục Root hiện tại: {0}</sys:String>
     <sys:String x:Key="Settings_Tld">Đuôi tên miền ảo mặc định (TLD):</sys:String>
     <sys:String x:Key="Settings_TldHint">Mặc định: test (tạo tên miền dạng: du-an.test)</sys:String>
     <sys:String x:Key="Settings_AutoStart">Tự động khởi động tất cả dịch vụ khi mở Novagon</sys:String>

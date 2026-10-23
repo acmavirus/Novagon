@@ -18,6 +18,7 @@ public class ServiceManager : IDisposable
     public RuntimePackage? ActivePhp { get; set; }
     public RuntimePackage? ActiveMySql { get; set; }
     public string ActiveWebServer { get; set; } = "nginx"; // "nginx" hoặc "apache"
+    public int PhpFastCgiPort { get; set; } = 9054;
 
     private ProcessRunner? _webRunner;
     private ProcessRunner? _phpRunner;
@@ -41,8 +42,11 @@ public class ServiceManager : IDisposable
     public ServiceManager(string? baseDir = null)
     {
         string root = baseDir ?? AppDirectoryHelper.AppRoot;
+        var settings = Novagon.Core.Config.AppSettings.Load();
+        string www = settings.GetEffectiveRootDirectory();
         Scanner = new RuntimeScanner(Path.Combine(root, "bin"));
-        VHostGen = new VHostGenerator(Path.Combine(root, "www"));
+        VHostGen = new VHostGenerator(www);
+        VHostGen.Tld = settings.DefaultTld;
 
         // Tự động nhận diện phiên bản runtime khả dụng đầu tiên
         var phps = Scanner.GetInstalledPackages("php");
@@ -88,7 +92,7 @@ public class ServiceManager : IDisposable
             {
                 Log("VHost", "Lưu ý: Ứng dụng đang chạy quyền User thường. Cần quyền Administrator để tự động sửa file hosts.");
             }
-            VHostGen.GenerateAll(LocalSslManager.CertPath, LocalSslManager.KeyPath, phpFastCgiPort: 9000);
+            VHostGen.GenerateAll(LocalSslManager.CertPath, LocalSslManager.KeyPath, phpFastCgiPort: PhpFastCgiPort);
             Log("VHost", "Đã quét và đồng bộ các Virtual Hosts.");
         }
         catch (Exception ex)
@@ -102,7 +106,7 @@ public class ServiceManager : IDisposable
         if (ActivePhp != null && File.Exists(ActivePhp.ExecutablePath))
         {
             string phpIni = Path.Combine(ActivePhp.RootPath, "php.ini");
-            string phpArgs = $"-b 127.0.0.1:9000" + (File.Exists(phpIni) ? $" -c \"{phpIni}\"" : "");
+            string phpArgs = $"-b 127.0.0.1:{PhpFastCgiPort}" + (File.Exists(phpIni) ? $" -c \"{phpIni}\"" : "");
 
             _phpRunner = new ProcessRunner("PHP", ActivePhp.ExecutablePath, phpArgs, ActivePhp.RootPath);
             _phpRunner.EnvironmentVariables["PHP_FCGI_MAX_REQUESTS"] = "1000";
@@ -110,7 +114,7 @@ public class ServiceManager : IDisposable
             _phpRunner.ErrorDataReceived += msg => Log("PHP", msg);
             _phpRunner.StatusChanged += _ => OnStateChanged?.Invoke();
             _phpRunner.Start();
-            Log("PHP", $"Khởi động {ActivePhp.Name} trên cổng 9000.");
+            Log("PHP", $"Khởi động {ActivePhp.Name} trên cổng {PhpFastCgiPort}.");
         }
         else
         {
@@ -229,7 +233,7 @@ max_allowed_packet=64M
         if (File.Exists(mailpitExe))
         {
             string mailpitDir = Path.GetDirectoryName(mailpitExe)!;
-            string mailpitArgs = "--smtp-addr 127.0.0.1:1025 --listen 127.0.0.1:8025";
+            string mailpitArgs = "--smtp 127.0.0.1:1025 --listen 127.0.0.1:8025";
             _mailpitRunner = new ProcessRunner("Mailpit", mailpitExe, mailpitArgs, mailpitDir);
             _mailpitRunner.OutputDataReceived += msg => Log("Mailpit", msg);
             _mailpitRunner.ErrorDataReceived += msg => Log("Mailpit", msg);
@@ -308,7 +312,7 @@ max_allowed_packet=64M
     public void ReloadVHosts()
     {
         Log("VHost", "Đang tải lại cấu hình Virtual Hosts...");
-        VHostGen.GenerateAll(LocalSslManager.CertPath, LocalSslManager.KeyPath, phpFastCgiPort: 9000);
+        VHostGen.GenerateAll(LocalSslManager.CertPath, LocalSslManager.KeyPath, phpFastCgiPort: PhpFastCgiPort);
 
         // Gửi lệnh reload cho Nginx nếu đang chạy
         var nginxPackages = Scanner.GetInstalledPackages("nginx");
@@ -333,7 +337,26 @@ max_allowed_packet=64M
         Log("VHost", "Tải lại Virtual Hosts hoàn tất.");
     }
 
-    private void Log(string source, string message)
+    public void UpdateRootDirectory(string newRoot)
+    {
+        if (string.IsNullOrWhiteSpace(newRoot))
+            newRoot = Path.Combine(AppDirectoryHelper.AppRoot, "www");
+
+        try
+        {
+            Directory.CreateDirectory(newRoot);
+        }
+        catch (Exception ex)
+        {
+            Log("System", $"Lỗi tạo thư mục Root: {ex.Message}");
+        }
+
+        VHostGen.WwwDirectory = newRoot;
+        Log("System", $"Đã cập nhật thư mục Root sang: {newRoot}");
+        ReloadVHosts();
+    }
+
+    public void Log(string source, string message)
     {
         OnLogReceived?.Invoke(source, $"[{DateTime.Now:HH:mm:ss}] [{source}] {message}");
     }

@@ -12,6 +12,16 @@ public class AppSettings
     public string DefaultTld { get; set; } = "test";
     public bool AutoStartServices { get; set; } = false;
     public bool StartWithWindows { get; set; } = false;
+    public string? RootDirectory { get; set; }
+
+    public string GetEffectiveRootDirectory()
+    {
+        if (!string.IsNullOrWhiteSpace(RootDirectory))
+        {
+            return RootDirectory;
+        }
+        return Path.Combine(AppDirectoryHelper.AppRoot, "www");
+    }
 
     public static AppSettings Load()
     {

@@ -423,6 +423,7 @@
                     <MenuItem Header="{DynamicResource Tray_Mailpit}" Click="BtnMailpit_Click"/>
                     <MenuItem Header="{DynamicResource Tray_Terminal}" Click="BtnTerminal_Click"/>
                     <MenuItem Header="{DynamicResource Tray_RootWww}" Click="BtnOpenWww_Click"/>
+                    <MenuItem Header="{DynamicResource Menu_ChangeRootDir}" Click="MenuChangeRootDir_Click"/>
                     <MenuItem Header="{DynamicResource Tray_Settings}" Click="MenuSettings_Click"/>
                     <MenuItem Header="{DynamicResource Tray_OpenApp}" Click="MenuShowDashboard_Click"/>
                     <MenuItem Header="{DynamicResource Tray_Exit}" Click="MenuExit_Click"/>
@@ -466,7 +467,14 @@
             <Button x:Name="BtnDatabase" Content="{DynamicResource Btn_Database}" Style="{StaticResource ActionButton}" Click="BtnDatabase_Click"/>
             <Button x:Name="BtnMailpit" Content="Mailpit" Style="{StaticResource ActionButton}" Click="BtnMailpit_Click" ToolTip="Mailpit (127.0.0.1:8025)"/>
             <Button x:Name="BtnTerminal" Content="{DynamicResource Btn_Terminal}" Style="{StaticResource ActionButton}" Click="BtnTerminal_Click"/>
-            <Button x:Name="BtnOpenWww" Content="{DynamicResource Btn_RootWww}" Style="{StaticResource ActionButton}" Click="BtnOpenWww_Click"/>
+            <Button x:Name="BtnOpenWww" Content="{DynamicResource Btn_RootWww}" Style="{StaticResource ActionButton}" Click="BtnOpenWww_Click">
+                <Button.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="{DynamicResource Tray_RootWww}" Click="BtnOpenWww_Click"/>
+                        <MenuItem Header="{DynamicResource Menu_ChangeRootDir}" Click="MenuChangeRootDir_Click"/>
+                    </ContextMenu>
+                </Button.ContextMenu>
+            </Button>
         </StackPanel>
 
         <!-- 3. Service Cards (4 Card trạng thái chi tiết, Độ tương phản cao) -->
@@ -516,7 +524,7 @@
                         </Border>
                     </Grid>
                     <TextBlock x:Name="TxtPhpTitle" Text="PHP" FontSize="15" FontWeight="Bold" Foreground="#0f172a" Margin="0,3,0,0" TextTrimming="CharacterEllipsis"/>
-                    <TextBlock x:Name="TxtPhpPort" Text="Port: 9000" FontSize="11" FontWeight="Bold" Foreground="#047857" Margin="0,2,0,0"/>
+                    <TextBlock x:Name="TxtPhpPort" Text="Port: 9054" FontSize="11" FontWeight="Bold" Foreground="#047857" Margin="0,2,0,0"/>
                 </StackPanel>
             </Border>
 

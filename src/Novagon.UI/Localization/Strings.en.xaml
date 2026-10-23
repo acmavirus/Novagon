@@ -133,6 +133,15 @@
     <sys:String x:Key="Settings_Language">Display Language:</sys:String>
     <sys:String x:Key="Settings_Language_Vi">🇻🇳 Tiếng Việt (Vietnamese)</sys:String>
     <sys:String x:Key="Settings_Language_En">🇬🇧 English</sys:String>
+    <sys:String x:Key="Settings_RootDir">Project Root Directory (Document Root):</sys:String>
+    <sys:String x:Key="Settings_RootDirHint">Folder containing website projects. When changed, Virtual Hosts and Nginx will sync automatically.</sys:String>
+    <sys:String x:Key="Settings_RootDirDefaultTooltip">Reset to default folder (www folder)</sys:String>
+    <sys:String x:Key="Btn_BrowseFolder">Browse...</sys:String>
+    <sys:String x:Key="Btn_DefaultFolder">Default</sys:String>
+    <sys:String x:Key="Dialog_SelectRootDirTitle">Select Project Root Directory from Drive</sys:String>
+    <sys:String x:Key="Msg_RootDirUpdated">Root directory changed to '{0}'! Virtual Hosts synced automatically.</sys:String>
+    <sys:String x:Key="Menu_ChangeRootDir">Change Root Directory from Drive...</sys:String>
+    <sys:String x:Key="Tooltip_RootDir">Current Root Directory: {0}</sys:String>
     <sys:String x:Key="Settings_Tld">Default Virtual Host TLD:</sys:String>
     <sys:String x:Key="Settings_TldHint">Default: test (generates: project-name.test)</sys:String>
     <sys:String x:Key="Settings_AutoStart">Automatically start all services on Novagon launch</sys:String>

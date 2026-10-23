@@ -40,6 +40,7 @@ public partial class MainWindow : Window
             BtnElevate.Visibility = Visibility.Visible;
         }
 
+        UpdateRootDirectoryState();
         LoadRuntimes();
         RefreshVHosts();
         RefreshPackageList();
@@ -90,7 +91,83 @@ public partial class MainWindow : Window
     private void OpenSettingsDialog()
     {
         var dlg = new SettingsWindow { Owner = this };
-        dlg.ShowDialog();
+        if (dlg.ShowDialog() == true && dlg.SettingsSaved)
+        {
+            ApplySettingsChange();
+        }
+    }
+
+    private void ApplySettingsChange()
+    {
+        var settings = Novagon.Core.Config.AppSettings.Load();
+        string newRoot = settings.GetEffectiveRootDirectory();
+        _serviceManager.VHostGen.Tld = settings.DefaultTld;
+        _serviceManager.UpdateRootDirectory(newRoot);
+        _quickAppManager.WwwRoot = newRoot;
+        UpdateRootDirectoryState();
+        RefreshVHosts();
+
+        string updatedMsg = string.Format(LocalizationManager.GetString("Msg_RootDirUpdated", "Đã chuyển đổi thư mục Root sang '{0}'! Virtual Hosts đã được đồng bộ tự động."), newRoot);
+        _serviceManager.Log("System", updatedMsg);
+    }
+
+    private void UpdateRootDirectoryState()
+    {
+        var settings = Novagon.Core.Config.AppSettings.Load();
+        string effectiveRoot = settings.GetEffectiveRootDirectory();
+        _quickAppManager.WwwRoot = effectiveRoot;
+        _serviceManager.VHostGen.Tld = settings.DefaultTld;
+
+        string tooltipText = string.Format(LocalizationManager.GetString("Tooltip_RootDir", "Thư mục Root hiện tại: {0}"), effectiveRoot);
+        if (BtnOpenWww != null)
+        {
+            BtnOpenWww.ToolTip = tooltipText;
+        }
+    }
+
+    private void MenuChangeRootDir_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var currentRoot = _serviceManager.VHostGen.WwwDirectory;
+            var dialog = new Microsoft.Win32.OpenFolderDialog
+            {
+                Title = LocalizationManager.GetString("Dialog_SelectRootDirTitle", "Chọn thư mục Root cho dự án từ ổ đĩa"),
+                InitialDirectory = Directory.Exists(currentRoot) ? currentRoot : Novagon.Core.AppDirectoryHelper.AppRoot,
+                Multiselect = false
+            };
+
+            if (dialog.ShowDialog(this) == true && !string.IsNullOrWhiteSpace(dialog.FolderName))
+            {
+                string selectedPath = Path.GetFullPath(dialog.FolderName);
+                var settings = Novagon.Core.Config.AppSettings.Load();
+                string defaultWww = Path.Combine(Novagon.Core.AppDirectoryHelper.AppRoot, "www");
+
+                if (string.Equals(selectedPath, Path.GetFullPath(defaultWww), StringComparison.OrdinalIgnoreCase))
+                {
+                    settings.RootDirectory = null;
+                }
+                else
+                {
+                    settings.RootDirectory = selectedPath;
+                    Directory.CreateDirectory(selectedPath);
+                }
+                settings.Save();
+
+                _serviceManager.UpdateRootDirectory(selectedPath);
+                _quickAppManager.WwwRoot = selectedPath;
+                UpdateRootDirectoryState();
+                RefreshVHosts();
+
+                string updatedMsg = string.Format(LocalizationManager.GetString("Msg_RootDirUpdated", "Đã chuyển đổi thư mục Root sang '{0}'! Virtual Hosts đã được đồng bộ tự động."), selectedPath);
+                _serviceManager.Log("System", updatedMsg);
+                MessageBox.Show(updatedMsg, LocalizationManager.GetString("Msg_NoticeTitle", "Thông báo"), MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(ex.Message, LocalizationManager.GetString("Msg_ErrorTitle", "Lỗi"), MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
     }
 
     private void OnLanguageChanged()
@@ -98,6 +175,7 @@ public partial class MainWindow : Window
         if (_isExiting) return;
         Dispatcher.BeginInvoke(() =>
         {
+            UpdateRootDirectoryState();
             UpdateUIState();
             LoadRuntimes();
             LoadExtensions();

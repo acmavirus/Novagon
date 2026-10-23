@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using Novagon.Core;
 using Novagon.Core.Network;
@@ -340,6 +340,59 @@ public class CoreTests
         {
             if (Directory.Exists(tempAppRoot))
                 Directory.Delete(tempAppRoot, recursive: true);
+        }
+    }
+
+    [Fact]
+    public void AppSettings_ShouldSupportCustomRootDirectory()
+    {
+        var settings = new Novagon.Core.Config.AppSettings();
+        string defaultRoot = settings.GetEffectiveRootDirectory();
+        Assert.EndsWith("www", defaultRoot);
+
+        string customRoot = @"D:\MyWebProjects";
+        settings.RootDirectory = customRoot;
+        Assert.Equal(customRoot, settings.GetEffectiveRootDirectory());
+
+        settings.RootDirectory = null;
+        Assert.Equal(defaultRoot, settings.GetEffectiveRootDirectory());
+    }
+
+    [Fact]
+    public void VHostGenerator_ShouldScanCustomRootDirectory()
+    {
+        string tempCustomDriveDir = Path.Combine(Path.GetTempPath(), "Novagon_DriveRoot_" + Guid.NewGuid().ToString("N"));
+        string customWww = Path.Combine(tempCustomDriveDir, "MyProjects");
+        string projDir = Path.Combine(customWww, "awesome-site");
+
+        try
+        {
+            Directory.CreateDirectory(projDir);
+            File.WriteAllText(Path.Combine(projDir, "index.php"), "<?php echo 'hello';");
+
+            var vhostGen = new VHostGenerator(customWww);
+            Assert.Equal(customWww, vhostGen.WwwDirectory);
+
+            var projects = vhostGen.ScanProjects();
+            Assert.Single(projects);
+            Assert.Equal("awesome-site", projects[0].Name);
+            Assert.Equal("awesome-site.test", projects[0].Domain);
+            Assert.Equal(projDir, projects[0].DocumentRoot);
+
+            string newCustomWww = Path.Combine(tempCustomDriveDir, "AnotherProjects");
+            string newProj = Path.Combine(newCustomWww, "site2");
+            Directory.CreateDirectory(newProj);
+            File.WriteAllText(Path.Combine(newProj, "index.php"), "<?php echo '2';");
+
+            vhostGen.WwwDirectory = newCustomWww;
+            var newProjects = vhostGen.ScanProjects();
+            Assert.Single(newProjects);
+            Assert.Equal("site2", newProjects[0].Name);
+        }
+        finally
+        {
+            if (Directory.Exists(tempCustomDriveDir))
+                Directory.Delete(tempCustomDriveDir, recursive: true);
         }
     }
 }
