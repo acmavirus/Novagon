@@ -82,8 +82,14 @@ public class ServiceManager : IDisposable
             Log("System", "Cảnh báo: Cổng 3306 (MySQL) đang bị ứng dụng khác chiếm giữ.");
         }
 
-        // 2. Đảm bảo chứng chỉ SSL cục bộ sẵn sàng
-        LocalSslManager.EnsureCertificatesInstalled(installToWindowsTrustStore: true);
+        // 2. Đồng bộ cài đặt và đảm bảo chứng chỉ SSL cục bộ sẵn sàng (nếu bật SSL)
+        var settings = Novagon.Core.Config.AppSettings.Load();
+        VHostGen.EnableSsl = settings.EnableSsl;
+        VHostGen.Tld = settings.DefaultTld;
+        if (settings.EnableSsl)
+        {
+            LocalSslManager.EnsureCertificatesInstalled(tld: VHostGen.Tld, installToWindowsTrustStore: true);
+        }
 
         // 3. Tự sinh Virtual Hosts và cập nhật file hosts
         try
@@ -338,6 +344,13 @@ max_allowed_packet=64M
     public void ReloadVHosts()
     {
         Log("VHost", "Đang tải lại cấu hình Virtual Hosts...");
+        var settings = Novagon.Core.Config.AppSettings.Load();
+        VHostGen.EnableSsl = settings.EnableSsl;
+        VHostGen.Tld = settings.DefaultTld;
+        if (settings.EnableSsl)
+        {
+            LocalSslManager.EnsureCertificatesInstalled(tld: VHostGen.Tld, installToWindowsTrustStore: true);
+        }
         VHostGen.GenerateAll(LocalSslManager.CertPath, LocalSslManager.KeyPath, phpFastCgiPort: PhpFastCgiPort);
 
         // Gửi lệnh reload cho Nginx nếu đang chạy

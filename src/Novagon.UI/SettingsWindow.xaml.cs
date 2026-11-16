@@ -33,8 +33,9 @@ public partial class SettingsWindow : Window
         // Root Directory
         TxtRootDir.Text = _settings.GetEffectiveRootDirectory();
 
-        // TLD, AutoStart & StartWithWindows
+        // TLD, SSL, AutoStart & StartWithWindows
         TxtTld.Text = _settings.DefaultTld;
+        ChkEnableSsl.IsChecked = _settings.EnableSsl;
         ChkAutoStart.IsChecked = _settings.AutoStartServices;
         ChkStartWithWindows.IsChecked = _settings.StartWithWindows;
     }
@@ -98,10 +99,11 @@ public partial class SettingsWindow : Window
             }
         }
 
-        // 3. TLD & AutoStart
+        // 3. TLD, SSL & AutoStart
         string tld = TxtTld.Text.Trim().TrimStart('.');
         if (string.IsNullOrWhiteSpace(tld)) tld = "test";
         _settings.DefaultTld = tld;
+        _settings.EnableSsl = ChkEnableSsl.IsChecked ?? true;
         _settings.AutoStartServices = ChkAutoStart.IsChecked ?? false;
 
         // 4. Khởi động cùng Windows

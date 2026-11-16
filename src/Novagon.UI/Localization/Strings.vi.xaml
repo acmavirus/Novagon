@@ -144,6 +144,8 @@
     <sys:String x:Key="Tooltip_RootDir">Thư mục Root hiện tại: {0}</sys:String>
     <sys:String x:Key="Settings_Tld">Đuôi tên miền ảo mặc định (TLD):</sys:String>
     <sys:String x:Key="Settings_TldHint">Mặc định: test (tạo tên miền dạng: du-an.test)</sys:String>
+    <sys:String x:Key="Settings_EnableSsl">Kích hoạt SSL (HTTPS) cho các tên miền ảo cục bộ</sys:String>
+    <sys:String x:Key="Settings_EnableSslHint">Tự động tạo chứng chỉ SSL cục bộ tin cậy và cấu hình Nginx cổng 443 cho mọi domain (vd: https://du-an.test).</sys:String>
     <sys:String x:Key="Settings_AutoStart">Tự động khởi động tất cả dịch vụ khi mở Novagon</sys:String>
     <sys:String x:Key="Settings_StartWithWindows">Khởi động cùng Windows (thu nhỏ vào khay hệ thống)</sys:String>
     <sys:String x:Key="Btn_SaveSettings">Lưu cài đặt</sys:String>

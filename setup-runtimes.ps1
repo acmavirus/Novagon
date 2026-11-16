@@ -1,4 +1,4 @@
-﻿# Setup Runtimes tự động cho Novagon (Nginx, PHP, MariaDB, Composer, Node.js)
+# Setup Runtimes tự động cho Novagon (Nginx, PHP, MariaDB, Composer, Node.js)
 param(
     [switch]$Full,
     [switch]$Force

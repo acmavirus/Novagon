@@ -10,6 +10,7 @@ public class AppSettings
 
     public string Language { get; set; } = "vi";
     public string DefaultTld { get; set; } = "test";
+    public bool EnableSsl { get; set; } = true;
     public bool AutoStartServices { get; set; } = false;
     public bool StartWithWindows { get; set; } = false;
     public string? RootDirectory { get; set; }

@@ -20,6 +20,7 @@ public class VHostGenerator
 {
     public string WwwDirectory { get; set; }
     public string Tld { get; set; } = "test";
+    public bool EnableSsl { get; set; } = true;
     public string NginxSitesEnabledDir { get; }
 
     public VHostGenerator(string? wwwDirectory = null)
@@ -89,24 +90,30 @@ public class VHostGenerator
         // NgÄƒn cháº·n cÃ¡c request tÃªn miá»n dá»± Ã¡n má»›i táº¡o bá»‹ Nginx Ä‘iá»u hÆ°á»›ng nháº§m vÃ o phpMyAdmin
         string defaultConfPath = Path.Combine(NginxSitesEnabledDir, "00-default.conf");
         string normWww = WwwDirectory.Replace('\\', '/');
-        string normCert = sslCertPath.Replace('\\', '/');
-        string normKey = sslKeyPath.Replace('\\', '/');
         string appsDir = Path.Combine(AppDirectoryHelper.AppRoot, "etc", "apps", "phpmyadmin");
         string normApps = appsDir.Replace('\\', '/');
 
+        string sslDirectives = "";
+        string sslListen = "";
+        if (EnableSsl && !string.IsNullOrWhiteSpace(sslCertPath) && !string.IsNullOrWhiteSpace(sslKeyPath) && File.Exists(sslCertPath) && File.Exists(sslKeyPath))
+        {
+            string normCert = sslCertPath.Replace('\\', '/');
+            string normKey = sslKeyPath.Replace('\\', '/');
+            sslListen = "\n    listen 443 ssl default_server;";
+            sslDirectives = $@"
+    ssl_certificate ""{normCert}"";
+    ssl_certificate_key ""{normKey}"";";
+        }
+
         string defaultConf = $@"server {{
-    listen 80 default_server;
-    listen 443 ssl default_server;
+    listen 80 default_server;{sslListen}
     server_name localhost 127.0.0.1 """";
 
     root ""{normWww}"";
     index index.php index.html index.htm;
     autoindex on;
     autoindex_exact_size off;
-    autoindex_localtime on;
-
-    ssl_certificate ""{normCert}"";
-    ssl_certificate_key ""{normKey}"";
+    autoindex_localtime on;{sslDirectives}
 
     location / {{
         try_files $uri $uri/ /index.php?$query_string;
@@ -144,7 +151,7 @@ public class VHostGenerator
         {
             string phpmyadminConfPath = Path.Combine(NginxSitesEnabledDir, "00-phpmyadmin.conf");
             var pmaProject = new ProjectInfo("phpmyadmin", "phpmyadmin.test", appsDir, appsDir);
-            string pmaConf = BuildNginxVHostConfig(pmaProject, sslCertPath, sslKeyPath, phpFastCgiPort);
+            string pmaConf = BuildNginxVHostConfig(pmaProject, sslCertPath, sslKeyPath, phpFastCgiPort, EnableSsl);
             File.WriteAllText(phpmyadminConfPath, pmaConf);
         }
 
@@ -163,7 +170,7 @@ public class VHostGenerator
         {
             domains.Add(p.Domain);
             string confPath = Path.Combine(NginxSitesEnabledDir, $"auto.{p.Domain}.conf");
-            string confContent = BuildNginxVHostConfig(p, sslCertPath, sslKeyPath, phpFastCgiPort);
+            string confContent = BuildNginxVHostConfig(p, sslCertPath, sslKeyPath, phpFastCgiPort, EnableSsl);
             File.WriteAllText(confPath, confContent);
         }
 
@@ -171,25 +178,31 @@ public class VHostGenerator
         HostsFileManager.SyncDomains(domains);
     }
 
-    private static string BuildNginxVHostConfig(ProjectInfo project, string sslCert, string sslKey, int phpPort)
+    private static string BuildNginxVHostConfig(ProjectInfo project, string sslCert, string sslKey, int phpPort, bool enableSsl = true)
     {
         string normRoot = project.DocumentRoot.Replace('\\', '/');
-        string normCert = sslCert.Replace('\\', '/');
-        string normKey = sslKey.Replace('\\', '/');
+
+        string sslListen = "";
+        string sslDirectives = "";
+        if (enableSsl && !string.IsNullOrWhiteSpace(sslCert) && !string.IsNullOrWhiteSpace(sslKey) && File.Exists(sslCert) && File.Exists(sslKey))
+        {
+            string normCert = sslCert.Replace('\\', '/');
+            string normKey = sslKey.Replace('\\', '/');
+            sslListen = "\n    listen 443 ssl;";
+            sslDirectives = $@"
+    ssl_certificate ""{normCert}"";
+    ssl_certificate_key ""{normKey}"";";
+        }
 
         return $@"server {{
-    listen 80;
-    listen 443 ssl;
+    listen 80;{sslListen}
     server_name {project.Domain};
 
     root ""{normRoot}"";
     index index.php index.html index.htm;
     autoindex on;
     autoindex_exact_size off;
-    autoindex_localtime on;
-
-    ssl_certificate ""{normCert}"";
-    ssl_certificate_key ""{normKey}"";
+    autoindex_localtime on;{sslDirectives}
 
     location / {{
         try_files $uri $uri/ /index.php?$query_string;

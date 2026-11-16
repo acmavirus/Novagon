@@ -21,11 +21,14 @@ public static class LocalSslManager
     public static string CaCertPath => Path.Combine(SslDir, "ca.crt");
     public static string CaKeyPath => Path.Combine(SslDir, "ca.key");
 
-    public static bool EnsureCertificatesInstalled(bool installToWindowsTrustStore = true)
+    public static bool EnsureCertificatesInstalled(string tld = "test", bool installToWindowsTrustStore = true)
     {
         try
         {
             Directory.CreateDirectory(SslDir);
+
+            // Chuẩn hóa TLD
+            string safeTld = string.IsNullOrWhiteSpace(tld) ? "test" : tld.Trim().TrimStart('.');
 
             // Kiểm tra xem certificate đã tồn tại trên đĩa và hợp lệ chưa
             if (File.Exists(CertPath) && File.Exists(KeyPath) && File.Exists(CaCertPath) && IsValidCertificate(CertPath))
@@ -62,16 +65,20 @@ public static class LocalSslManager
                 InstallRootCaToWindows(rootCert, CaCertPath);
             }
 
-            // 2. Tạo chứng chỉ Wildcard cho *.test, localhost, 127.0.0.1
+            // 2. Tạo chứng chỉ Wildcard cho *.{safeTld}, *.test, localhost, 127.0.0.1
             using var leafKey = RSA.Create(2048);
             var leafReq = new CertificateRequest(
-                "CN=*.test",
+                $"CN=*.{safeTld}",
                 leafKey,
                 HashAlgorithmName.SHA256,
                 RSASignaturePadding.Pkcs1);
 
             var sanBuilder = new SubjectAlternativeNameBuilder();
-            sanBuilder.AddDnsName("*.test");
+            sanBuilder.AddDnsName($"*.{safeTld}");
+            if (!string.Equals(safeTld, "test", StringComparison.OrdinalIgnoreCase))
+            {
+                sanBuilder.AddDnsName("*.test");
+            }
             sanBuilder.AddDnsName("localhost");
             sanBuilder.AddDnsName("*.local");
             sanBuilder.AddIpAddress(IPAddress.Loopback);

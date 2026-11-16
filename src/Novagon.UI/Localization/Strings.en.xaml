@@ -144,6 +144,8 @@
     <sys:String x:Key="Tooltip_RootDir">Current Root Directory: {0}</sys:String>
     <sys:String x:Key="Settings_Tld">Default Virtual Host TLD:</sys:String>
     <sys:String x:Key="Settings_TldHint">Default: test (generates: project-name.test)</sys:String>
+    <sys:String x:Key="Settings_EnableSsl">Enable SSL (HTTPS) for local virtual host domains</sys:String>
+    <sys:String x:Key="Settings_EnableSslHint">Automatically generate trusted local SSL certificates and configure Nginx port 443 for all domains (e.g., https://project.test).</sys:String>
     <sys:String x:Key="Settings_AutoStart">Automatically start all services on Novagon launch</sys:String>
     <sys:String x:Key="Settings_StartWithWindows">Start Novagon when Windows starts (minimized to tray)</sys:String>
     <sys:String x:Key="Btn_SaveSettings">Save Settings</sys:String>

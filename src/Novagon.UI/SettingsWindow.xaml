@@ -129,6 +129,11 @@
                              BorderBrush="#94a3b8" Foreground="#0f172a" Margin="0,0,0,4"/>
                     <TextBlock Text="{DynamicResource Settings_TldHint}" FontSize="11" Foreground="#64748b" Margin="0,0,0,14"/>
 
+                    <!-- Enable Local SSL (HTTPS) -->
+                    <CheckBox x:Name="ChkEnableSsl" Content="{DynamicResource Settings_EnableSsl}"
+                              FontSize="13" FontWeight="SemiBold" Foreground="#0f172a" VerticalAlignment="Center" Margin="0,0,0,4"/>
+                    <TextBlock Text="{DynamicResource Settings_EnableSslHint}" FontSize="11" Foreground="#64748b" Margin="20,0,0,14" TextWrapping="Wrap"/>
+
                     <!-- Auto-start services checkbox -->
                     <CheckBox x:Name="ChkAutoStart" Content="{DynamicResource Settings_AutoStart}"
                               FontSize="13" FontWeight="SemiBold" Foreground="#0f172a" VerticalAlignment="Center" Margin="0,0,0,10"/>

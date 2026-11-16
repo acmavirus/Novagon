@@ -111,10 +111,12 @@ public partial class MainWindow : Window
         var settings = Novagon.Core.Config.AppSettings.Load();
         string newRoot = settings.GetEffectiveRootDirectory();
         _serviceManager.VHostGen.Tld = settings.DefaultTld;
+        _serviceManager.VHostGen.EnableSsl = settings.EnableSsl;
         _serviceManager.UpdateRootDirectory(newRoot);
         _quickAppManager.WwwRoot = newRoot;
         UpdateRootDirectoryState();
         RefreshVHosts();
+        Task.Run(() => _serviceManager.ReloadVHosts());
 
         string updatedMsg = string.Format(LocalizationManager.GetString("Msg_RootDirUpdated", "Đã chuyển đổi thư mục Root sang '{0}'! Virtual Hosts đã được đồng bộ tự động."), newRoot);
         _serviceManager.Log("System", updatedMsg);
@@ -126,6 +128,7 @@ public partial class MainWindow : Window
         string effectiveRoot = settings.GetEffectiveRootDirectory();
         _quickAppManager.WwwRoot = effectiveRoot;
         _serviceManager.VHostGen.Tld = settings.DefaultTld;
+        _serviceManager.VHostGen.EnableSsl = settings.EnableSsl;
 
         string tooltipText = string.Format(LocalizationManager.GetString("Tooltip_RootDir", "Thư mục Root hiện tại: {0}"), effectiveRoot);
         if (BtnOpenWww != null)
@@ -418,7 +421,9 @@ public partial class MainWindow : Window
         // Mở trình duyệt nếu được chọn
         if (ChkOpenBrowser?.IsChecked == true)
         {
-            string url = $"http://{projectName}.test";
+            var appSettings = Novagon.Core.Config.AppSettings.Load();
+            string protocol = appSettings.EnableSsl ? "https" : "http";
+            string url = $"{protocol}://{projectName}.{appSettings.DefaultTld}";
             try
             {
                 Process.Start(new ProcessStartInfo { FileName = url, UseShellExecute = true });
@@ -647,7 +652,9 @@ public partial class MainWindow : Window
     {
         if (sender is Button btn && btn.Tag is string domain)
         {
-            string url = $"https://{domain}";
+            var settings = Novagon.Core.Config.AppSettings.Load();
+            string protocol = settings.EnableSsl ? "https" : "http";
+            string url = $"{protocol}://{domain}";
             Process.Start(new ProcessStartInfo
             {
                 FileName = url,
