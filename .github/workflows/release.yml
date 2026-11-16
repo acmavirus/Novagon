@@ -1,0 +1,132 @@
+name: Build & Publish Releases
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release Version (e.g. 1.0.1 - leave empty to auto-extract from tag/csproj)'
+        required: false
+        default: ''
+      package_type:
+        description: 'Package Type to build'
+        required: true
+        default: 'Both'
+        type: choice
+        options:
+          - 'Both'
+          - 'Full'
+          - 'Lite'
+      prerelease:
+        description: 'Mark as pre-release'
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build & Package Windows Installers
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract Release Version
+        id: get_version
+        shell: pwsh
+        run: |
+          $inputVer = "${{ github.event.inputs.version }}"
+          if ([string]::IsNullOrWhiteSpace($inputVer)) {
+              if ("${{ github.ref_type }}" -eq "tag") {
+                  $inputVer = "${{ github.ref_name }}".TrimStart('v')
+              } else {
+                  $csproj = [xml](Get-Content "src/Novagon.UI/Novagon.UI.csproj" -Raw)
+                  $inputVer = $csproj.Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
+              }
+          }
+          if ([string]::IsNullOrWhiteSpace($inputVer)) {
+              $inputVer = "1.0.0"
+          }
+          Write-Host "Target Release Version: $inputVer"
+          "version=$inputVer" >> $env:GITHUB_OUTPUT
+
+      - name: Setup .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+          dotnet-quality: 'preview'
+        continue-on-error: true
+
+      - name: Verify or Install .NET 10 Preview Fallback
+        shell: pwsh
+        run: |
+          $dotnetCheck = dotnet --list-sdks | Select-String "10.0"
+          if (-not $dotnetCheck) {
+              Write-Host "Installing .NET 10 via dotnet-install.ps1..."
+              Invoke-WebRequest -Uri "https://dot.net/v1/dotnet-install.ps1" -OutFile "dotnet-install.ps1"
+              & ./dotnet-install.ps1 -Channel 10.0 -Quality preview -InstallDir "$env:ProgramFiles\dotnet"
+          }
+          dotnet --info
+
+      - name: Install Inno Setup
+        shell: pwsh
+        run: |
+          choco install innosetup -y --no-progress
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (Test-Path $iscc) {
+              echo "$env:ProgramFiles(x86)\Inno Setup 6" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          }
+
+      - name: Setup Portable Runtimes (Nginx, PHP, MariaDB, Node.js, Composer)
+        shell: pwsh
+        run: |
+          $pkgType = "${{ github.event.inputs.package_type }}"
+          if ([string]::IsNullOrWhiteSpace($pkgType)) { $pkgType = "Both" }
+          
+          if ($pkgType -eq "Lite") {
+              .\setup-runtimes.ps1
+          } else {
+              .\setup-runtimes.ps1 -Full
+          }
+
+      - name: Build and Package Executable Installers
+        shell: pwsh
+        run: |
+          $ver = "${{ steps.get_version.outputs.version }}"
+          $pkgType = "${{ github.event.inputs.package_type }}"
+          if ([string]::IsNullOrWhiteSpace($pkgType)) { $pkgType = "Both" }
+          
+          Write-Host "Starting build for Version: $ver | PackageType: $pkgType"
+          .\build-installer.ps1 -Version $ver -PackageType $pkgType
+
+      - name: Display Build Artifacts and Checksums
+        shell: pwsh
+        run: |
+          Get-ChildItem -Path dist/installer
+          if (Test-Path dist/installer/SHA256SUMS.txt) {
+              Write-Host "`n=== SHA256 CHECKSUMS ==="
+              Get-Content dist/installer/SHA256SUMS.txt
+          }
+
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        with:
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('v{0}', steps.get_version.outputs.version) }}
+          name: ${{ format('Novagon v{0}', steps.get_version.outputs.version) }}
+          draft: false
+          prerelease: ${{ github.event.inputs.prerelease == 'true' }}
+          generate_release_notes: true
+          files: |
+            dist/installer/*.exe
+            dist/installer/SHA256SUMS.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

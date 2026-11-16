@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
     <ProjectReference Include="..\Novagon.Core\Novagon.Core.csproj" />
@@ -18,6 +18,12 @@
     <RootNamespace>Novagon.UI</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <Version>1.0.1</Version>
+    <FileVersion>1.0.1.0</FileVersion>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
+    <Product>Novagon</Product>
+    <Company>Novagon</Company>
+    <Description>Modern Local Web Development Environment</Description>
   </PropertyGroup>
 
   <ItemGroup>

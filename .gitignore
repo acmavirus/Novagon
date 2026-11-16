@@ -1,27 +1,28 @@
 # =============================================================================
-# NOVAGON - .gitignore (Bảo mật cho Public Repository)
+# NOVAGON - .gitignore (Bảo mật tối đa & Cho phép Upload Bản cài đặt EXE)
 # =============================================================================
 
-# 1. BẢO MẬT & CHỨNG CHỈ SỐ (CREDENTIALS & SSL)
+# 1. BẢO MẬT, CHỨNG CHỈ SỐ & THÔNG TIN NHẠY CẢM (CREDENTIALS & SSL)
 # -----------------------------------------------------------------------------
-etc/ssl/*.key
-etc/ssl/*.crt
-etc/ssl/*.pem
-etc/ssl/*.pfx
-etc/ssl/*.csr
+etc/ssl/*
+!etc/ssl/.gitkeep
 *.key
 *.pem
 *.pfx
 *.crt
+*.csr
+*.cer
 
-# Các file biến môi trường & bí mật
+# Biến môi trường & cấu hình bí mật
 .env
 .env.*
 !.env.example
 *.local
+secrets.json
 
-# Cơ sở dữ liệu và sao lưu cục bộ
-backups/
+# Cơ sở dữ liệu, dữ liệu MariaDB/MySQL và bản sao lưu
+backups/*
+!backups/.gitkeep
 *.bak
 *.backup
 *.dump
@@ -29,53 +30,49 @@ backups/
 *.sqlite
 *.sqlite3
 *.db
+*.err
+*.pid
 
-# 2. RUNTIME BINARIES & DỮ LIỆU NGƯỜI DÙNG (PORTABLE RUNTIMES)
+# 2. RUNTIME BINARIES & DỮ LIỆU CÁ NHÂN (PORTABLE RUNTIMES)
 # -----------------------------------------------------------------------------
-# Toàn bộ binary PHP, MySQL (MariaDB data), Nginx, Composer (cài qua setup-runtimes.ps1)
+# Binary các engine: Nginx, PHP, MariaDB, Nodejs, Redis, Composer...
 bin/
 /bin/
 
-# Thư mục chứa các website cá nhân của người dùng
+# Thư mục web dự án cá nhân (chỉ giữ trang chào mừng mặc định)
 www/*
 !www/.gitkeep
+!www/index.php
 
-# Thư mục ứng dụng bên thứ 3 & Cache tải về
+# Ứng dụng bên thứ 3 và cache tải về
 etc/apps/*
 !etc/apps/.gitkeep
 etc/cache/*
 !etc/cache/.gitkeep
 
-# Gói nén dung lượng lớn
-*.zip
-*.tar.gz
-*.7z
-*.rar
-
-# Các cấu hình Virtual Host tự động sinh động
+# Cấu hình Virtual Host tự động sinh
 etc/nginx/sites-enabled/*
 !etc/nginx/sites-enabled/.gitkeep
 
-# 3. NHẬT KÝ & TIẾN TRÌNH (LOGS & PIDS)
+# 3. NHẬT KÝ, TIẾN TRÌNH & CRASH LOGS
 # -----------------------------------------------------------------------------
 logs/*
 !logs/.gitkeep
 *.log
 crash.log
-*.pid
+*.tmp
 
-# 4. .NET & IDE BUILD ARTIFACTS
+# 4. .NET BUILD ARTIFACTS & IDE CACHE
 # -----------------------------------------------------------------------------
-# Thư mục build
+# Thư mục build trung gian
 [Bb]in/
 [Oo]bj/
-*.exe
 *.dll
 *.pdb
 *.msi
 *.nupkg
 
-# Visual Studio / Rider / VS Code cache
+# Visual Studio / VS Code / JetBrains Rider cache
 .vs/
 .idea/
 .vscode/
@@ -91,3 +88,13 @@ project.assets.json
 Thumbs.db
 Desktop.ini
 .DS_Store
+
+# 5. ĐÓNG GÓI BẢN CÀI ĐẶT (DISTRIBUTION & INSTALLER)
+# -----------------------------------------------------------------------------
+# Chặn toàn bộ thư mục build và bộ cài đặt (sử dụng GitHub Releases để lưu trữ bản cài đặt lớn)
+dist/
+*.exe
+*.zip
+*.tar.gz
+*.7z
+*.rar

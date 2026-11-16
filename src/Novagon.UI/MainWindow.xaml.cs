@@ -46,6 +46,15 @@ public partial class MainWindow : Window
         RefreshPackageList();
         LoadExtensions();
         UpdateUIState();
+
+        Loaded += (s, e) =>
+        {
+            var settings = Novagon.Core.Config.AppSettings.Load();
+            if (settings.AutoStartServices)
+            {
+                BtnStartAll_Click(this, new RoutedEventArgs());
+            }
+        };
     }
 
     private static bool IsAdministrator()

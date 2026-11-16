@@ -185,9 +185,13 @@ public class ServiceManager : IDisposable
                 }
             }
 
-            if (!File.Exists(myIni))
+            // Luôn đồng bộ my.ini (UTF-8 No BOM) để datadir luôn trỏ đúng thư mục data thực tế của phiên bản MySQL/MariaDB
+            try
             {
-                string defaultIni = $@"[mysqld]
+                var utf8NoBom = new System.Text.UTF8Encoding(false);
+                if (!File.Exists(myIni))
+                {
+                    string defaultIni = $@"[mysqld]
 datadir={normData}
 port=3306
 bind-address=127.0.0.1
@@ -196,13 +200,35 @@ collation-server=utf8mb4_unicode_ci
 default-storage-engine=INNODB
 max_allowed_packet=64M
 ";
-                try { File.WriteAllText(myIni, defaultIni); } catch { }
+                    File.WriteAllText(myIni, defaultIni, utf8NoBom);
+                }
+                else
+                {
+                    string iniContent = File.ReadAllText(myIni, utf8NoBom);
+                    string updatedContent = System.Text.RegularExpressions.Regex.Replace(
+                        iniContent,
+                        @"(?m)^\s*datadir\s*=.*$",
+                        $"datadir={normData}"
+                    );
+                    if (!updatedContent.Contains($"datadir={normData}", StringComparison.OrdinalIgnoreCase))
+                    {
+                        updatedContent = updatedContent.Replace("[mysqld]", $"[mysqld]\r\ndatadir={normData}");
+                    }
+                    if (updatedContent != iniContent)
+                    {
+                        File.WriteAllText(myIni, updatedContent, utf8NoBom);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Log("MySQL", $"Cảnh báo cấu hình my.ini: {ex.Message}");
             }
 
             // Lưu ý: Đối với MySQL/MariaDB, --defaults-file BẮT BUỘC phải là tham số đầu tiên
             string myArgs = File.Exists(myIni)
-                ? $"--defaults-file=\"{myIni}\" --standalone --console"
-                : "--standalone --console";
+                ? $"--defaults-file=\"{myIni}\" --datadir=\"{normData}\" --standalone --console"
+                : $"--datadir=\"{normData}\" --standalone --console";
 
             _mysqlRunner = new ProcessRunner("MySQL", ActiveMySql.ExecutablePath, myArgs, ActiveMySql.RootPath);
             _mysqlRunner.OutputDataReceived += msg => Log("MySQL", msg);
